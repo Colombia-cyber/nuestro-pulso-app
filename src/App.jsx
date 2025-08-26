@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { BrowserRouter as Router, Routes, Route, NavLink } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, NavLink, Link } from "react-router-dom";
 
 // --- Error Boundary ---
 class ErrorBoundary extends React.Component {
@@ -148,11 +148,26 @@ function DebateSurvey({ host, user }) {
   const [options, setOptions] = useState('');
   const [survey, setSurvey] = useState(null);
   const [hasVoted, setHasVoted] = useState(false);
+  const [error, setError] = useState('');
 
   function handleCreate() {
+    setError('');
+    if (!question.trim()) {
+      setError('Please enter a survey question.');
+      return;
+    }
+    if (!options.trim()) {
+      setError('Please enter survey options.');
+      return;
+    }
+    const optionList = options.split(',').map(opt => opt.trim()).filter(opt => opt.length > 0);
+    if (optionList.length < 2) {
+      setError('Please provide at least 2 options separated by commas.');
+      return;
+    }
     setSurvey({
       question,
-      options: options.split(',').map(opt => ({ title: opt.trim(), votes: 0 }))
+      options: optionList.map(opt => ({ title: opt, votes: 0 }))
     });
     setQuestion('');
     setOptions('');
@@ -167,7 +182,7 @@ function DebateSurvey({ host, user }) {
   }
 
   return (
-    <div style={{background:"#fff", padding:32, borderRadius:12, boxShadow:"0 4px 16px #0001", marginTop:32, maxWidth:520, margin:"32px auto"}}>
+    <div style={{background:"#fff", padding:32, borderRadius:12, boxShadow:"0 4px 16px #0001", marginTop:32, maxWidth:520, marginLeft:"auto", marginRight:"auto"}}>
       <h3 style={{fontWeight:"bold", color:"#164e63", marginBottom:18, fontSize:22}}>Debate Survey</h3>
       {host && user && user.username === host.id && !survey && (
         <div>
@@ -175,15 +190,16 @@ function DebateSurvey({ host, user }) {
             value={question} onChange={e => setQuestion(e.target.value)} placeholder="Survey Question" />
           <input style={{border:"1px solid #ddd", padding:10, borderRadius:8, marginBottom:12, width:"100%"}}
             value={options} onChange={e => setOptions(e.target.value)} placeholder="Options (comma separated)" />
+          {error && <div style={{color:"#b91c1c", marginBottom:12, fontSize:14}}>{error}</div>}
           <button style={{background:"#22c55e", color:"#fff", padding:"12px 0", borderRadius:8, fontWeight:"bold", width:"100%"}} onClick={handleCreate}>Create Survey</button>
         </div>
       )}
       {survey && (
         <div>
           <div style={{fontWeight:"bold", marginBottom:12}}>{survey.question}</div>
-          <div style={{display:"flex", gap:12}}>
+          <div style={{display:"flex", flexWrap:"wrap", gap:12}}>
             {survey.options.map((opt, idx) => (
-              <button key={idx} style={{background:"#164e63", color:"#fff", padding:"10px 18px", borderRadius:8}} onClick={() => handleVote(idx)} disabled={hasVoted}>
+              <button key={idx} style={{background:"#164e63", color:"#fff", padding:"10px 18px", borderRadius:8, flex:"1 1 auto", minWidth:"120px"}} onClick={() => handleVote(idx)} disabled={hasVoted}>
                 {opt.title} ({opt.votes} votes)
               </button>
             ))}
@@ -199,7 +215,7 @@ function DebateSurvey({ host, user }) {
 function AdminControls({ userList, host, currentUser }) {
   if (!currentUser || currentUser.username !== host.id) return null;
   return (
-    <div style={{background:"#22c55e", padding:32, borderRadius:12, color:"#fff", marginTop:32, maxWidth:520, margin:"32px auto"}}>
+    <div style={{background:"#22c55e", padding:32, borderRadius:12, color:"#fff", marginTop:32, maxWidth:520, marginLeft:"auto", marginRight:"auto"}}>
       <h3 style={{fontWeight:"bold", marginBottom:18}}>Moderator Controls</h3>
       <ul style={{padding:0}}>
         {userList.map(u => (
@@ -223,8 +239,8 @@ function Home() {
     <div style={{minHeight:"100vh", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", background:"#e0f2fe"}}>
       <h1 style={{fontSize:48, fontWeight:"bold", color:"#164e63", marginBottom:24}}>Nuestro Pulso</h1>
       <p style={{fontSize:24, marginBottom:18, color:"#334155"}}>Community Platform for News, Debates, Events, and More.</p>
-      <a href="/chat" style={{background:"#22c55e", color:"#fff", padding:"18px 36px", borderRadius:10, fontWeight:"bold", fontSize:22, marginBottom:12, textDecoration:"none"}}>Join Chat</a>
-      <a href="/debate" style={{background:"#164e63", color:"#fff", padding:"18px 36px", borderRadius:10, fontWeight:"bold", fontSize:22, marginTop:8, textDecoration:"none"}}>Weekly Debate</a>
+      <Link to="/chat" style={{background:"#22c55e", color:"#fff", padding:"18px 36px", borderRadius:10, fontWeight:"bold", fontSize:22, marginBottom:12, textDecoration:"none", display:"inline-block"}}>Join Chat</Link>
+      <Link to="/debate" style={{background:"#164e63", color:"#fff", padding:"18px 36px", borderRadius:10, fontWeight:"bold", fontSize:22, marginTop:8, textDecoration:"none", display:"inline-block"}}>Weekly Debate</Link>
     </div>
   );
 }
@@ -235,7 +251,7 @@ function NotFound() {
     <div style={{minHeight:"100vh", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center"}}>
       <h1 style={{fontSize:36, fontWeight:"bold", color:"#164e63", marginBottom:12}}>Page Not Found</h1>
       <p style={{marginBottom:18}}>The page you requested doesn’t exist.</p>
-      <a href="/" style={{background:"#22c55e", color:"#fff", padding:"12px 28px", borderRadius:8, fontWeight:"bold", textDecoration:"none"}}>Go Home</a>
+      <Link to="/" style={{background:"#22c55e", color:"#fff", padding:"12px 28px", borderRadius:8, fontWeight:"bold", textDecoration:"none"}}>Go Home</Link>
     </div>
   );
 }
@@ -251,7 +267,7 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <Router>
+      <Router basename="/nuestro-pulso-app">
         <Navbar />
         <Routes>
           <Route path="/" element={<Home />} />

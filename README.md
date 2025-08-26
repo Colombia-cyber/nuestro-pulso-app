@@ -118,6 +118,41 @@ The app is configured for GitHub Pages deployment with:
 
 Changes to the `main` branch will automatically trigger a new deployment.
 
+## 🔧 Troubleshooting
+
+### Common Issues
+
+**Build Errors:**
+- Make sure all dependencies are installed: `npm install`
+- Clear cache and reinstall: `rm -rf node_modules package-lock.json && npm install`
+- Check Node.js version (v16+ recommended)
+
+**Deployment Issues:**
+- Verify GitHub Pages is enabled in repository settings
+- Check that the base path in `vite.config.js` matches your repository name
+- Ensure the GitHub Actions workflow has proper permissions
+
+**Development Server Issues:**
+- If the dev server doesn't start, try a different port: `npm run dev -- --port 3001`
+- Clear browser cache if you see stale content
+- Check console for JavaScript errors
+
+**UI/Routing Issues:**
+- Make sure you're accessing the correct URL with the base path: `http://localhost:3000/nuestro-pulso-app/`
+- Verify React Router basename matches the Vite base configuration
+- Clear localStorage if chat login persists unexpectedly
+
+**Survey/Debate Features:**
+- Login as `adriana-charry` with any password 5+ characters to access host features
+- Surveys require at least 2 options separated by commas
+- Voting is limited to one vote per session
+
+### GitHub Pages Deployment
+
+The site auto-deploys to: https://colombia-cyber.github.io/nuestro-pulso-app
+
+Deployment happens automatically when pushing to the `main` branch. Check the Actions tab in GitHub for deployment status.
+
 ## 📄 License
 
 This project is open source and available under the [MIT License](LICENSE).
