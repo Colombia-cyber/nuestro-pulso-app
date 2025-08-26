@@ -251,12 +251,12 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <Router>
+      <Router basename="/nuestro-pulso-app">
         <Navbar />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/chat" element={user ? <ChatComponent user={user} /> : <ChatAuthGate onAuth={setUser} />} />
-          <Route path="/debate" element={<WeeklyDebate user={user} host={DEBATE_HOST} />} />
+          <Route path="/debate" element={user ? <WeeklyDebate user={user} host={DEBATE_HOST} /> : <ChatAuthGate onAuth={setUser} />} />
           <Route path="/survey" element={<DebateSurvey host={DEBATE_HOST} user={user} />} />
           <Route path="/admin" element={<AdminControls userList={allUsers} host={DEBATE_HOST} currentUser={user} />} />
           <Route path="*" element={<NotFound />} />
