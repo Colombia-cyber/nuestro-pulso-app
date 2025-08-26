@@ -52,8 +52,8 @@ function Navbar() {
   );
 }
 
-// --- Chat Login ---
-function ChatAuthGate({ onAuth }) {
+// --- Login Gate ---
+function AuthGate({ onAuth, title = "Login", buttonText = "Login" }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -69,7 +69,7 @@ function ChatAuthGate({ onAuth }) {
   return (
     <div style={{minHeight:"100vh", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", background:"#e0f2fe"}}>
       <form onSubmit={handleLogin} style={{background:"#fff", padding:32, borderRadius:12, boxShadow:"0 4px 16px #0001", width:320}}>
-        <h2 style={{fontWeight:"bold", fontSize:24, marginBottom:18, color:"#164e63"}}>Chat Login</h2>
+        <h2 style={{fontWeight:"bold", fontSize:24, marginBottom:18, color:"#164e63"}}>{title}</h2>
         <input
           type="text"
           style={{border:"1px solid #ddd", padding:10, borderRadius:8, marginBottom:12, width:"100%"}}
@@ -87,7 +87,7 @@ function ChatAuthGate({ onAuth }) {
           required
         />
         {error && <div style={{color:"#b00", marginBottom:10}}>{error}</div>}
-        <button style={{background:"#22c55e", color:"#fff", padding:"10px 0", borderRadius:8, fontWeight:"bold", width:"100%"}}>Join Chat</button>
+        <button style={{background:"#22c55e", color:"#fff", padding:"10px 0", borderRadius:8, fontWeight:"bold", width:"100%"}}>{buttonText}</button>
       </form>
     </div>
   );
@@ -255,8 +255,8 @@ function App() {
         <Navbar />
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/chat" element={user ? <ChatComponent user={user} /> : <ChatAuthGate onAuth={setUser} />} />
-          <Route path="/debate" element={user ? <WeeklyDebate user={user} host={DEBATE_HOST} /> : <ChatAuthGate onAuth={setUser} />} />
+          <Route path="/chat" element={user ? <ChatComponent user={user} /> : <AuthGate onAuth={setUser} title="Chat Login" buttonText="Join Chat" />} />
+          <Route path="/debate" element={user ? <WeeklyDebate user={user} host={DEBATE_HOST} /> : <AuthGate onAuth={setUser} title="Debate Login" buttonText="Join Debate" />} />
           <Route path="/survey" element={<DebateSurvey host={DEBATE_HOST} user={user} />} />
           <Route path="/admin" element={<AdminControls userList={allUsers} host={DEBATE_HOST} currentUser={user} />} />
           <Route path="*" element={<NotFound />} />
