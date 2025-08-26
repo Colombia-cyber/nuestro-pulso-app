@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { BrowserRouter as Router, Routes, Route, NavLink } from "react-router-dom";
+import HomePage from "./HomePage.jsx";
+import ChatPage from "./ChatPage.jsx";
 
 // --- Error Boundary ---
 class ErrorBoundary extends React.Component {
@@ -217,18 +219,6 @@ function AdminControls({ userList, host, currentUser }) {
   );
 }
 
-// --- Home Page ---
-function Home() {
-  return (
-    <div style={{minHeight:"100vh", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", background:"#e0f2fe"}}>
-      <h1 style={{fontSize:48, fontWeight:"bold", color:"#164e63", marginBottom:24}}>Nuestro Pulso</h1>
-      <p style={{fontSize:24, marginBottom:18, color:"#334155"}}>Community Platform for News, Debates, Events, and More.</p>
-      <a href="/chat" style={{background:"#22c55e", color:"#fff", padding:"18px 36px", borderRadius:10, fontWeight:"bold", fontSize:22, marginBottom:12, textDecoration:"none"}}>Join Chat</a>
-      <a href="/debate" style={{background:"#164e63", color:"#fff", padding:"18px 36px", borderRadius:10, fontWeight:"bold", fontSize:22, marginTop:8, textDecoration:"none"}}>Weekly Debate</a>
-    </div>
-  );
-}
-
 // --- Not Found Page ---
 function NotFound() {
   return (
@@ -254,8 +244,8 @@ function App() {
       <Router basename="/nuestro-pulso-app">
         <Navbar />
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/chat" element={user ? <ChatComponent user={user} /> : <ChatAuthGate onAuth={setUser} />} />
+          <Route path="/" element={<HomePage />} />
+          <Route path="/chat" element={<ChatPage />} />
           <Route path="/debate" element={user ? <WeeklyDebate user={user} host={DEBATE_HOST} /> : <ChatAuthGate onAuth={setUser} />} />
           <Route path="/survey" element={<DebateSurvey host={DEBATE_HOST} user={user} />} />
           <Route path="/admin" element={<AdminControls userList={allUsers} host={DEBATE_HOST} currentUser={user} />} />
