@@ -125,18 +125,12 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js" onerror="document.getElementById('diagnostic-message').innerText = 'Error: Failed to load Babel library.'; document.getElementById('diagnostic-message').style.backgroundColor = 'red'; document.getElementById('diagnostic-message').style.color = 'white';"></script>
     <script src="https://cdn.jsdelivr.net/npm/react-router-dom@6.23.1/dist/index.js"></script>
 
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     
-
     <script type="text/babel">
-        // Firebase imports are handled by the separate script tags above,
-        // so they become globally available via Babel's scope.
-        // We'll use window.firebase_app, window.firebase_auth, etc. to be explicit.
-        const { initializeApp } = window.firebase_app;
-        const { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut } = window.firebase_auth;
-        const { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, serverTimestamp, getDocs, runTransaction } = window.firebase_firestore;
+        // Firebase modules are now globally available under the `firebase` object
         const { HashRouter, Routes, Route, Link, useParams } = window.ReactRouterDOM;
 
         const diagMessage = document.getElementById('diagnostic-message');
@@ -185,9 +179,10 @@
 
             let firebaseApp, firestoreDb, firebaseAuth;
             try {
-                firebaseApp = initializeApp(firebaseConfig);
-                firestoreDb = getFirestore(firebaseApp);
-                firebaseAuth = getAuth(firebaseApp);
+                // Correctly initialize Firebase from the global `firebase` object
+                firebaseApp = firebase.initializeApp(firebaseConfig);
+                firestoreDb = firebaseApp.firestore();
+                firebaseAuth = firebaseApp.auth();
 
                 setApp(firebaseApp);
                 setDb(firestoreDb);
@@ -201,16 +196,16 @@
                 return;
             }
 
-            const unsubscribe = onAuthStateChanged(firebaseAuth, async (user) => {
+            const unsubscribe = firebaseAuth.onAuthStateChanged(async (user) => {
               try {
                 if (user) {
                   setCurrentUser(user);
                   setUserId(user.uid);
                 } else {
                   if (initialAuthToken) {
-                    await signInWithCustomToken(firebaseAuth, initialAuthToken);
+                    await firebaseAuth.signInWithCustomToken(initialAuthToken);
                   } else {
-                    const anonymousUser = await signInAnonymously(firebaseAuth);
+                    const anonymousUser = await firebaseAuth.signInAnonymously();
                     setCurrentUser(anonymousUser.user);
                     setUserId(anonymousUser.user.uid);
                   }
@@ -233,8 +228,9 @@
             if (!db || !userId || !isAuthReady || appId === 'default-app-id-fallback') return;
 
             try {
-                const friendsCollectionRef = collection(db, `/artifacts/${appId}/users/${userId}/friends`);
-                const unsubscribeFriends = onSnapshot(friendsCollectionRef, (snapshot) => {
+                // Adjusting Firestore calls to V8 syntax if needed (your existing code looks good here)
+                const friendsCollectionRef = db.collection(`/artifacts/${appId}/users/${userId}/friends`);
+                const unsubscribeFriends = friendsCollectionRef.onSnapshot((snapshot) => {
                   const friendsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                   setFriends(friendsData.filter(f => f.status === 'accepted'));
                   setPendingRequests(friendsData.filter(f => f.status === 'pending' && f.requesterId !== userId));
@@ -251,7 +247,7 @@
             }
           }, [db, userId, isAuthReady, appId]);
 
-          const value = { app, db, auth, currentUser, userId, isAuthReady, friends, pendingRequests, signOutUser: () => signOut(auth), appId };
+          const value = { app, db, auth, currentUser, userId, isAuthReady, friends, pendingRequests, signOutUser: () => auth.signOut(), appId };
 
           return (
             <FirebaseContext.Provider value={value}>
@@ -775,8 +771,8 @@
         if (!db || !isAuthReady || !appId || appId === 'default-app-id-fallback') return;
 
         setLoading(true);
-        const q = collection(db, eventsCollectionPath);
-        const unsubscribe = onSnapshot(q, (snapshot) => {
+        const q = db.collection(eventsCollectionPath);
+        const unsubscribe = q.onSnapshot((snapshot) => {
           const fetchedEvents = snapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data(),
@@ -818,10 +814,10 @@
 
         setFormLoading(true);
         try {
-          await addDoc(collection(db, eventsCollectionPath), {
+          await db.collection(eventsCollectionPath).add({
             ...newEvent,
             hostId: userId,
-            timestamp: serverTimestamp(),
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
           });
           setMessage("Event created successfully!");
           setMessageType("success");
@@ -1012,8 +1008,8 @@
             if (!db || !isAuthReady || !appId || appId === 'default-app-id-fallback') return;
 
             setLoading(true);
-            const q = collection(db, meetupsCollectionPath);
-            const unsubscribe = onSnapshot(q, (snapshot) => {
+            const q = db.collection(meetupsCollectionPath);
+            const unsubscribe = q.onSnapshot((snapshot) => {
                 const fetchedMeetups = snapshot.docs.map(doc => ({
                     id: doc.id,
                     ...doc.data(),
@@ -1055,10 +1051,10 @@
 
             setFormLoading(true);
             try {
-                await addDoc(collection(db, meetupsCollectionPath), {
+                await db.collection(meetupsCollectionPath).add({
                     ...newMeetup,
                     hostId: userId,
-                    timestamp: serverTimestamp(),
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                 });
 
                 setMessage("Meetup created successfully!");
@@ -1248,8 +1244,8 @@
             if (!db || !isAuthReady || !appId || appId === 'default-app-id-fallback') return;
 
             setLoading(true);
-            const q = collection(db, postsCollectionPath);
-            const unsubscribe = onSnapshot(q, (snapshot) => {
+            const q = db.collection(postsCollectionPath);
+            const unsubscribe = q.onSnapshot((snapshot) => {
                 const fetchedPosts = snapshot.docs.map(doc => ({
                     id: doc.id,
                     ...doc.data(),
@@ -1278,10 +1274,10 @@
             }
 
             try {
-                await addDoc(collection(db, postsCollectionPath), {
+                await db.collection(postsCollectionPath).add({
                     content: newPostContent,
                     authorId: userId,
-                    timestamp: serverTimestamp(),
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                 });
                 setNewPostContent('');
                 setMessage("Post created successfully!");
@@ -1460,8 +1456,8 @@
             if (!db || !isAuthReady || !appId || appId === 'default-app-id-fallback') return;
             setLoading(true);
 
-            const q = collection(db, chatCollectionPath);
-            const unsubscribe = onSnapshot(q, (snapshot) => {
+            const q = db.collection(chatCollectionPath);
+            const unsubscribe = q.onSnapshot((snapshot) => {
                 const fetchedMessages = snapshot.docs.map(doc => ({
                     id: doc.id,
                     ...doc.data(),
@@ -1488,10 +1484,10 @@
             if (!newMessage.trim() || !userId) return;
 
             try {
-                await addDoc(collection(db, chatCollectionPath), {
+                await db.collection(chatCollectionPath).add({
                     content: newMessage,
                     authorId: userId,
-                    timestamp: serverTimestamp(),
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                 });
                 setNewMessage('');
             } catch (error) {
@@ -1562,14 +1558,14 @@
         React.useEffect(() => {
             if (!db || !isAuthReady || !appId || appId === 'default-app-id-fallback') return;
 
-            const debateRef = doc(db, debateCollectionPath, debateDocId);
-            const unsubscribe = onSnapshot(debateRef, async (docSnapshot) => {
-                if (docSnapshot.exists()) {
+            const debateRef = db.collection(debateCollectionPath).doc(debateDocId);
+            const unsubscribe = debateRef.onSnapshot(async (docSnapshot) => {
+                if (docSnapshot.exists) {
                     setDebate(docSnapshot.data());
                     
-                    const userVoteRef = doc(db, `/artifacts/${appId}/users/${userId}/debate_votes`, debateDocId);
-                    const userVoteDoc = await getDoc(userVoteRef);
-                    setHasVoted(userVoteDoc.exists());
+                    const userVoteRef = db.collection(`/artifacts/${appId}/users/${userId}/debate_votes`).doc(debateDocId);
+                    const userVoteDoc = await userVoteRef.get();
+                    setHasVoted(userVoteDoc.exists);
                 } else {
                     console.warn("Debate document not found. Please create one in Firestore.");
                 }
@@ -1593,19 +1589,19 @@
                 return;
             }
 
-            const debateRef = doc(db, debateCollectionPath, debateDocId);
-            const userVoteRef = doc(db, `/artifacts/${appId}/users/${userId}/debate_votes`, debateDocId);
+            const debateRef = db.collection(debateCollectionPath).doc(debateDocId);
+            const userVoteRef = db.collection(`/artifacts/${appId}/users/${userId}/debate_votes`).doc(debateDocId);
             
             try {
-                await runTransaction(db, async (transaction) => {
+                await db.runTransaction(async (transaction) => {
                     const currentDebateDoc = await transaction.get(debateRef);
-                    if (!currentDebateDoc.exists()) {
+                    if (!currentDebateDoc.exists) {
                         throw "Debate does not exist!";
                     }
 
                     const newVoteCount = currentDebateDoc.data()[side] + 1;
                     transaction.update(debateRef, { [side]: newVoteCount });
-                    transaction.set(userVoteRef, { votedAt: serverTimestamp() });
+                    transaction.set(userVoteRef, { votedAt: firebase.firestore.FieldValue.serverTimestamp() });
                 });
 
                 setMessage("Your vote has been cast! Thank you for participating.");
@@ -1698,14 +1694,14 @@
         React.useEffect(() => {
             if (!db || !isAuthReady || !appId || appId === 'default-app-id-fallback') return;
 
-            const pollRef = doc(db, pollCollectionPath, pollDocId);
-            const unsubscribe = onSnapshot(pollRef, async (docSnapshot) => {
-                if (docSnapshot.exists()) {
+            const pollRef = db.collection(pollCollectionPath).doc(pollDocId);
+            const unsubscribe = pollRef.onSnapshot(async (docSnapshot) => {
+                if (docSnapshot.exists) {
                     setPoll(docSnapshot.data());
 
-                    const userVoteRef = doc(db, `/artifacts/${appId}/users/${userId}/poll_votes`, pollDocId);
-                    const userVoteDoc = await getDoc(userVoteRef);
-                    setHasVoted(userVoteDoc.exists());
+                    const userVoteRef = db.collection(`/artifacts/${appId}/users/${userId}/poll_votes`).doc(pollDocId);
+                    const userVoteDoc = await userVoteRef.get();
+                    setHasVoted(userVoteDoc.exists);
                 } else {
                     console.warn("Poll document not found. Please create one in Firestore.");
                 }
@@ -1729,20 +1725,20 @@
                 return;
             }
 
-            const pollRef = doc(db, pollCollectionPath, pollDocId);
-            const userVoteRef = doc(db, `/artifacts/${appId}/users/${userId}/poll_votes`, pollDocId);
+            const pollRef = db.collection(pollCollectionPath).doc(pollDocId);
+            const userVoteRef = db.collection(`/artifacts/${appId}/users/${userId}/poll_votes`).doc(pollDocId);
             
             try {
-                await runTransaction(db, async (transaction) => {
+                await db.runTransaction(async (transaction) => {
                     const currentPollDoc = await transaction.get(pollRef);
-                    if (!currentPollDoc.exists()) {
+                    if (!currentPollDoc.exists) {
                         throw "Poll does not exist!";
                     }
                     const newOptions = [...currentPollDoc.data().options];
                     newOptions[optionIndex].votes += 1;
 
                     transaction.update(pollRef, { options: newOptions });
-                    transaction.set(userVoteRef, { votedAt: serverTimestamp(), option: optionIndex });
+                    transaction.set(userVoteRef, { votedAt: firebase.firestore.FieldValue.serverTimestamp(), option: optionIndex });
                 });
 
                 setMessage("Your vote has been cast! Thank you for participating.");
@@ -1861,31 +1857,31 @@
 
             setLoading(true);
             try {
-                const requestFromUserRef = doc(db, `${getUserCollectionBasePath(userId)}/friends`, recipientId);
-                const requestToUserRef = doc(db, `${getUserCollectionBasePath(recipientId)}/friends`, userId);
+                const requestFromUserRef = db.collection(`${getUserCollectionBasePath(userId)}/friends`).doc(recipientId);
+                const requestToUserRef = db.collection(`${getUserCollectionBasePath(recipientId)}/friends`).doc(userId);
 
                 const [requestFromUserDoc, requestToUserDoc] = await Promise.all([
-                    getDoc(requestFromUserRef),
-                    getDoc(requestToUserRef)
+                    requestFromUserRef.get(),
+                    requestToUserRef.get()
                 ]);
 
-                if (requestFromUserDoc.exists() && requestFromUserDoc.data().status === 'pending') {
+                if (requestFromUserDoc.exists && requestFromUserDoc.data().status === 'pending') {
                     setMessage("You already sent a request to this user.");
                     setMessageType("error");
                     setShowModal(true);
-                } else if (requestFromUserDoc.exists() && requestFromUserDoc.data().status === 'accepted') {
+                } else if (requestFromUserDoc.exists && requestFromUserDoc.data().status === 'accepted') {
                      setMessage("You are already friends with this user.");
                      setMessageType("error");
                      setShowModal(true);
-                } else if (requestToUserDoc.exists() && requestToUserDoc.data().status === 'pending') {
+                } else if (requestToUserDoc.exists && requestToUserDoc.data().status === 'pending') {
                     setMessage("This user has already sent you a friend request. Check your pending requests!");
                     setMessageType("error");
                     setShowModal(true);
                 } else {
-                    await setDoc(requestToUserRef, {
+                    await requestToUserRef.set({
                         requesterId: userId,
                         status: 'pending',
-                        timestamp: serverTimestamp(),
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                     });
                     setMessage("Friend request sent!");
                     setMessageType("success");
@@ -1906,14 +1902,14 @@
 
             setLoading(true);
             try {
-                const requestRef = doc(db, `${getUserCollectionBasePath(userId)}/friends`, requestId);
-                await updateDoc(requestRef, { status: 'accepted' });
+                const requestRef = db.collection(`${getUserCollectionBasePath(userId)}/friends`).doc(requestId);
+                await requestRef.update({ status: 'accepted' });
 
-                const otherUserFriendRef = doc(db, `${getUserCollectionBasePath(requestId)}/friends`, userId);
-                await setDoc(otherUserFriendRef, {
+                const otherUserFriendRef = db.collection(`${getUserCollectionBasePath(requestId)}/friends`).doc(userId);
+                await otherUserFriendRef.set({
                     requesterId: requestId,
                     status: 'accepted',
-                    timestamp: serverTimestamp(),
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                 });
 
                 setMessage("Friend request accepted!");
@@ -1934,8 +1930,8 @@
 
             setLoading(true);
             try {
-                const requestRef = doc(db, `${getUserCollectionBasePath(userId)}/friends`, requestId);
-                await deleteDoc(requestRef);
+                const requestRef = db.collection(`${getUserCollectionBasePath(userId)}/friends`).doc(requestId);
+                await requestRef.delete();
                 setMessage("Friend request declined.");
                 setMessageType("success");
                 setShowModal(true);
@@ -2147,20 +2143,20 @@
                 if (!db || !targetUserId || !appId || appId === 'default-app-id-fallback') return;
 
                 const userProfileDocPath = `/artifacts/${appId}/users/${targetUserId}/profile/data`;
-                const userRef = doc(db, userProfileDocPath);
+                const userRef = db.collection(userProfileDocPath).doc(); // Correcting for Firestore v8 syntax
 
                 try {
-                    const docSnap = await getDoc(userRef);
-                    if (docSnap.exists()) {
+                    const docSnap = await userRef.get();
+                    if (docSnap.exists) {
                         setProfile(docSnap.data());
                     } else {
                         const defaultProfile = {
                             displayName: `Anonymous User (${targetUserId.substring(0, 8)}...)`,
                             bio: 'This user has no bio yet.',
                             photoURL: `https://placehold.co/150x150/D1D5DB/4B5563?text=User`,
-                            createdAt: serverTimestamp(),
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                         };
-                        await setDoc(userRef, defaultProfile, { merge: true });
+                        await userRef.set(defaultProfile, { merge: true });
                         setProfile(defaultProfile);
                     }
                 } catch (e) {
