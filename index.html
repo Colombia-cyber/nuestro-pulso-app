@@ -1,1 +1,2281 @@
-Hello, Colombia Cyber! (Alt Test)
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nuestro Pulso - Community, News & Explore</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for Poppins and Montserrat -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* Define custom CSS variables for color palette */
+        :root {
+            --primary-dark: #1f3f6c; /* Deep, professional blue */
+            --primary-light: #2c5187; /* Slightly lighter shade */
+            --accent-vibrant: #48d1cc; /* Cool, modern cyan */
+            --background-light: #f9fafb;
+            --text-color: #333;
+            --subtle-gray: #e6e9ee;
+            --card-bg: #ffffff;
+        }
+
+        /* Tailwind custom styles (to ensure variables are picked up) */
+        .bg-primary-dark { background-color: var(--primary-dark); }
+        .bg-primary-light { background-color: var(--primary-light); }
+        .bg-accent-vibrant { background-color: var(--accent-vibrant); }
+        .bg-background-light { background-color: var(--background-light); }
+        .text-primary-dark { color: var(--primary-dark); }
+        .text-primary-light { color: var(--primary-light); }
+        .text-accent-vibrant { color: var(--accent-vibrant); }
+        .text-text-color { color: var(--text-color); }
+        .text-subtle-gray { color: var(--subtle-gray); }
+        .bg-card-bg { background-color: var(--card-bg); }
+        .border-primary-dark { border-color: var(--primary-dark); }
+        .border-primary-light { border-color: var(--primary-light); }
+        .border-accent-vibrant { border-color: var(--accent-vibrant); }
+        .border-subtle-gray { border-color: var(--subtle-gray); }
+        .hover\:bg-primary-dark:hover { background-color: var(--primary-dark); }
+        .hover\:bg-primary-light:hover { background-color: var(--primary-light); }
+        .hover\:bg-accent-vibrant:hover { background-color: var(--accent-vibrant); }
+        .hover\:text-primary-dark:hover { color: var(--primary-dark); }
+        .hover\:text-primary-light:hover { color: var(--primary-light); }
+        .hover\:text-accent-vibrant:hover { color: var(--accent-vibrant); }
+
+        /* Custom Fonts */
+        .font-poppins {
+          font-family: 'Poppins', sans-serif;
+        }
+        .font-montserrat {
+          font-family: 'Montserrat', sans-serif;
+        }
+
+        /* Custom Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: #f1f1f1;
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #888;
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #555;
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes fadeInScale {
+          from { opacity: 0; transform: scale(0.95); }
+          to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+          animation: fadeIn 0.5s ease-out forwards;
+        }
+        .animate-zoom-in {
+          animation: fadeInScale 0.3s ease-out forwards;
+        }
+        .animate-fade-in-up {
+          animation: fadeInUp 0.6s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="font-poppins antialiased text-text-color bg-background-light">
+    <div id="root"></div>
+
+    <!-- React and ReactDOM Libraries (Updated to React 17) -->
+    <script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Firebase Libraries -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, serverTimestamp, getDocs, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        // Using HashRouter for GitHub Pages compatibility
+        import { HashRouter, Routes, Route, Link, useParams } from "https://cdn.jsdelivr.net/npm/react-router-dom@6.23.1/dist/index.js";
+        // Google Maps imports removed as per user request
+
+        // IMPORTANT: These global variables are provided by the Canvas environment
+        // For local testing, you might need to define them if not already present
+        // Example: const __app_id = 'your-local-app-id';
+        // Example: const __firebase_config = JSON.stringify({ /* your firebase config */ });
+        // Example: const __initial_auth_token = 'your-custom-token';
+
+        // --- Firebase Initialization and Context ---
+        const FirebaseContext = React.createContext(null);
+
+        const FirebaseProvider = ({ children }) => {
+          const [app, setApp] = React.useState(null);
+          const [db, setDb] = React.useState(null);
+          const [auth, setAuth] = React.useState(null);
+          const [currentUser, setCurrentUser] = React.useState(null);
+          const [userId, setUserId] = React.useState(null);
+          const [isAuthReady, setIsAuthReady] = React.useState(false);
+          const [friends, setFriends] = React.useState([]);
+          const [pendingRequests, setPendingRequests] = React.useState([]);
+
+          // appId is needed for constructing collection paths correctly
+          const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+
+          React.useEffect(() => {
+            // Initialize Firebase only once
+            if (typeof __firebase_config === 'undefined') {
+              console.error("Firebase config not found. Please ensure __firebase_config is defined.");
+              return;
+            }
+
+            const firebaseConfig = JSON.parse(__firebase_config);
+            const firebaseApp = initializeApp(firebaseConfig);
+            const firestoreDb = getFirestore(firebaseApp);
+            const firebaseAuth = getAuth(firebaseApp);
+
+            setApp(firebaseApp);
+            setDb(firestoreDb);
+            setAuth(firebaseAuth);
+
+            // Set up auth state change listener
+            const unsubscribe = onAuthStateChanged(firebaseAuth, async (user) => {
+              if (user) {
+                setCurrentUser(user);
+                setUserId(user.uid);
+              } else {
+                // Sign in anonymously if there is no custom token or if signed out
+                try {
+                  if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(firebaseAuth, __initial_auth_token);
+                  } else {
+                    const anonymousUser = await signInAnonymously(firebaseAuth);
+                    setCurrentUser(anonymousUser.user);
+                    setUserId(anonymousUser.user.uid);
+                  }
+                } catch (error) {
+                  console.error("Error during initial sign-in:", error);
+                  // Fallback to a random UUID if anonymous sign-in also fails
+                  setUserId(crypto.randomUUID());
+                }
+              }
+              setIsAuthReady(true);
+            });
+
+            // Cleanup subscription on unmount
+            return () => unsubscribe();
+          }, []); // Empty dependency array means this runs once on mount
+
+          // New use effect for fetching friends and pending requests
+          React.useEffect(() => {
+            if (!db || !userId || !isAuthReady) return; // Ensure auth is ready
+
+            // Standardized collection path for user's friends
+            const friendsCollectionRef = collection(db, `/artifacts/${appId}/users/${userId}/friends`);
+            const unsubscribeFriends = onSnapshot(friendsCollectionRef, (snapshot) => {
+              const friendsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+              setFriends(friendsData.filter(f => f.status === 'accepted'));
+              setPendingRequests(friendsData.filter(f => f.status === 'pending' && f.requesterId !== userId));
+            });
+
+            return () => {
+              unsubscribeFriends();
+            };
+          }, [db, userId, isAuthReady, appId]); // Added appId to dependencies
+
+          const value = { app, db, auth, currentUser, userId, isAuthReady, friends, pendingRequests, signOutUser: () => signOut(auth), appId }; // Export appId
+
+          return (
+            <FirebaseContext.Provider value={value}>
+              {children}
+            </FirebaseContext.Provider>
+          );
+        };
+
+        const useFirebase = () => React.useContext(FirebaseContext);
+
+        // --- API Utility Functions ---
+        const GEMINI_API_KEY = ""; // Canvas provides this at runtime
+        const GEMINI_FLASH_MODEL = "gemini-2.5-flash-preview-05-20";
+        const IMAGEN_MODEL = "imagen-3.0-generate-002";
+        const TTS_MODEL = "gemini-2.5-flash-preview-tts";
+
+        async function callGeminiAPI(payload, model = GEMINI_FLASH_MODEL) {
+          let attempts = 0;
+          const maxAttempts = 5;
+          const initialDelay = 1000; // 1 second
+
+          while (attempts < maxAttempts) {
+            try {
+              const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
+              const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+              });
+
+              if (response.status === 429) { // Too Many Requests
+                const delay = initialDelay * Math.pow(2, attempts);
+                await new Promise(res => setTimeout(res, delay));
+                attempts++;
+                continue;
+              }
+
+              if (!response.ok) {
+                throw new Error(`API error: ${response.statusText}`);
+              }
+
+              const result = await response.json();
+              return result;
+
+            } catch (error) {
+              console.error(`Attempt ${attempts + 1} failed:`, error);
+              const delay = initialDelay * Math.pow(2, attempts);
+              await new Promise(res => setTimeout(res, delay));
+              attempts++;
+            }
+          }
+          throw new Error("Max API retry attempts reached.");
+        }
+
+        async function callImagenAPI(prompt) {
+          let attempts = 0;
+          const maxAttempts = 5;
+          const initialDelay = 1000; // 1 second
+
+          while (attempts < maxAttempts) {
+            try {
+              const payload = { instances: { prompt: prompt }, parameters: { "sampleCount": 1 } };
+              const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${IMAGEN_MODEL}:predict?key=${GEMINI_API_KEY}`;
+              const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+              });
+
+              if (response.status === 429) {
+                const delay = initialDelay * Math.pow(2, attempts);
+                await new Promise(res => setTimeout(res, delay));
+                attempts++;
+                continue;
+              }
+
+              if (!response.ok) {
+                throw new Error(`Imagen API error: ${response.statusText}`);
+              }
+
+              const result = await response.json();
+              if (result.predictions && result.predictions.length > 0 && result.predictions[0].bytesBase64Encoded) {
+                return `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`;
+              } else {
+                throw new Error("No image data found in Imagen API response.");
+              }
+            } catch (error) {
+              console.error(`Attempt ${attempts + 1} failed for Imagen API:`, error);
+              const delay = initialDelay * Math.pow(2, attempts);
+              await new Promise(res => setTimeout(res, delay));
+              attempts++;
+            }
+          }
+          throw new Error("Max Imagen API retry attempts reached.");
+        }
+
+
+        async function callTtsApi(text, voiceName = "Kore") {
+          let attempts = 0;
+          const maxAttempts = 5;
+          const initialDelay = 1000; // 1 second
+
+          while (attempts < maxAttempts) {
+            try {
+              const payload = {
+                contents: [{
+                  parts: [{ text: text }]
+                }],
+                generationConfig: {
+                  responseModalities: ["AUDIO"],
+                  speechConfig: {
+                    voiceConfig: {
+                      prebuiltVoiceConfig: { voiceName: voiceName }
+                    }
+                  }
+                },
+                model: TTS_MODEL
+              };
+              const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${TTS_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
+              const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+              });
+
+              if (response.status === 429) {
+                const delay = initialDelay * Math.pow(2, attempts);
+                await new Promise(res => setTimeout(res, delay));
+                attempts++;
+                continue;
+              }
+
+              if (!response.ok) {
+                throw new Error(`TTS API error: ${response.statusText}`);
+              }
+
+              const result = await response.json();
+              const part = result?.candidates?.[0]?.content?.parts?.[0];
+              const audioData = part?.inlineData?.data;
+              const mimeType = part?.inlineData?.mimeType;
+
+              if (audioData && mimeType && mimeType.startsWith("audio/")) {
+                const sampleRateMatch = mimeType.match(/rate=(\d+)/);
+                const sampleRate = sampleRateMatch ? parseInt(sampleRateMatch[1], 10) : 16000; // Default to 16kHz if not found
+                const pcmData = base64ToArrayBuffer(audioData);
+                const pcm16 = new Int16Array(pcmData);
+                const wavBlob = pcmToWav(pcm16, sampleRate);
+                return URL.createObjectURL(wavBlob);
+              } else {
+                throw new Error("No audio data found in TTS API response.");
+              }
+            } catch (error) {
+              console.error(`Attempt ${attempts + 1} failed for TTS API:`, error);
+              const delay = initialDelay * Math.pow(2, attempts);
+              await new Promise(res => setTimeout(res, delay));
+              attempts++;
+            }
+          }
+          throw new Error("Max TTS API retry attempts reached.");
+        }
+
+        // Helper for TTS: Convert Base64 to ArrayBuffer
+        function base64ToArrayBuffer(base64) {
+          const binaryString = window.atob(base64);
+          const len = binaryString.length;
+          const bytes = new Uint8Array(len);
+          for (let i = 0; i < len; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+          }
+          return bytes.buffer;
+        }
+
+        // Helper for TTS: Convert PCM to WAV format
+        function pcmToWav(pcm16, sampleRate) {
+          const numChannels = 1;
+          const bitDepth = 16;
+          const bytesPerSample = bitDepth / 8;
+          const byteRate = numChannels * sampleRate * bytesPerSample;
+          const blockAlign = numChannels * bytesPerSample;
+
+          const dataLength = pcm16.length * bytesPerSample;
+          const buffer = new ArrayBuffer(44 + dataLength);
+          const view = new DataView(buffer);
+
+          let offset = 0;
+
+          // RIFF header
+          writeString(view, offset, 'RIFF'); offset += 4;
+          view.setUint32(offset, 36 + dataLength, true); offset += 4; // ChunkSize
+          writeString(view, offset, 'WAVE'); offset += 4;
+
+          // fmt sub-chunk
+          writeString(view, offset, 'fmt '); offset += 4;
+          view.setUint32(offset, 16, true); offset += 4; // Subchunk1Size (16 for PCM)
+          view.setUint16(offset, 1, true); offset += 2; // AudioFormat (1 for PCM)
+          view.setUint16(offset, numChannels, true); offset += 2; // NumChannels
+          view.setUint32(offset, sampleRate, true); offset += 4; // SampleRate
+          view.setUint32(offset, byteRate, true); offset += 4; // ByteRate
+          view.setUint16(offset, blockAlign, true); offset += 2; // BlockAlign
+          view.setUint16(offset, bitDepth, true); offset += 2; // BitsPerSample
+
+          // data sub-chunk
+          writeString(view, offset, 'data'); offset += 4;
+          view.setUint32(offset, dataLength, true); offset += 4; // Subchunk2Size
+
+          // Write PCM data
+          for (let i = 0; i < pcm16.length; i++) {
+            view.setInt16(offset, pcm16[i], true); offset += 2;
+          }
+
+          return new Blob([buffer], { type: 'audio/wav' });
+        }
+
+        function writeString(view, offset, string) {
+          for (let i = 0; i < string.length; i++) {
+            view.setUint8(offset + i, string.charCodeAt(i));
+          }
+        }
+
+        // --- Common UI Components ---
+        const MessageModal = ({ message, type, onClose }) => {
+          if (!message) return null;
+
+          const bgColor = type === 'error' ? 'bg-red-500' : 'bg-green-500';
+          const borderColor = type === 'error' ? 'border-red-700' : 'border-green-700';
+
+          return (
+            <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 z-50">
+              <div className={`relative ${bgColor} text-white p-6 rounded-lg shadow-xl border-2 ${borderColor} max-w-sm w-full animate-fade-in`}>
+                <h3 className="text-xl font-bold mb-4">{type === 'error' ? 'Error' : 'Success'}</h3>
+                <p className="mb-6">{message}</p>
+                <button
+                  onClick={onClose}
+                  className="w-full bg-white text-gray-800 py-2 px-4 rounded-md hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-75"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          );
+        };
+
+        const LoadingSpinner = ({ text = "Loading..." }) => (
+          <div className="flex flex-col items-center justify-center p-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-accent-vibrant"></div>
+            <p className="mt-3 text-primary-dark text-lg">{text}</p>
+          </div>
+        );
+
+        // --- Navigation Bar ---
+        const Navbar = () => {
+          const { signOutUser } = useFirebase();
+          const tabs = [
+            { name: 'News Hub', id: 'news', path: '/news' },
+            { name: 'Events', id: 'events', path: '/events' },
+            { name: 'Meetups', id: 'meetups', path: '/meetups' }, // Updated path/name
+            { name: 'Community Feed', id: 'community', path: '/community' },
+            { name: 'Weekly Debate', id: 'debate', path: '/debate' },
+            { name: 'Pedro Poll', id: 'pedroPoll', path: '/poll' },
+            { name: 'Legislative', id: 'legislative', path: '/legislative' },
+            { name: 'Explore', id: 'explore', path: '/explore' },
+            { name: 'Chat', id: 'chat', path: '/chat' },
+            { name: 'Reels', id: 'reels', path: '/reels' },
+            { name: 'Friends', id: 'friends', path: '/friends' },
+          ];
+
+          return (
+            <nav className="bg-primary-dark p-4 shadow-lg sticky top-0 z-40">
+              <div className="container mx-auto flex flex-wrap justify-between items-center">
+                <Link to="/" className="text-3xl font-extrabold text-background-light mr-4 font-montserrat">Nuestro Pulso</Link>
+                <div className="flex-grow">
+                  <ul className="flex flex-wrap justify-center sm:justify-end gap-x-4 gap-y-2 mt-2 sm:mt-0">
+                    {tabs.map((tab) => (
+                      <li key={tab.id}>
+                        <Link
+                          to={tab.path}
+                          className="py-2 px-4 rounded-md text-lg font-medium transition-all duration-300 ease-in-out font-poppins text-background-light hover:text-accent-vibrant hover:bg-primary-light"
+                        >
+                          {tab.name}
+                        </Link>
+                      </li>
+                    ))}
+                 <li>
+                    <button
+                        onClick={signOutUser}
+                        className="py-2 px-4 rounded-md text-lg font-medium transition-all duration-300 ease-in-out font-poppins text-background-light hover:text-red-400 hover:bg-primary-light"
+                    >
+                        Sign Out
+                    </button>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </nav>
+      );
+    };
+
+    // --- News Hub Component ---
+    const NewsHub = () => {
+      const [newsArticles, setNewsArticles] = React.useState([]);
+      const [loading, setLoading] = React.useState(false);
+      const [selectedArticle, setSelectedArticle] = React.useState(null);
+      const [message, setMessage] = React.useState('');
+      const [messageType, setMessageType] = React.useState('');
+      const [showModal, setShowModal] = React.useState(false);
+      const [ttsAudioUrl, setTtsAudioUrl] = React.useState(null);
+      const [ttsLoading, setTtsLoading] = React.useState(false);
+      const [discussionText, setDiscussionText] = React.useState('');
+      const [discussionLoading, setDiscussionLoading] = React.useState(false);
+      const [discussionResponse, setDiscussionResponse] = React.useState('');
+      const [timeFilter, setTimeFilter] = React.useState('24h');
+      const audioRef = React.useRef(null);
+
+      const fetchNews = async () => {
+        setLoading(true);
+        setNewsArticles([]);
+        setMessage('');
+        setMessageType('');
+        try {
+          const prompt = `Generate 5 recent, diverse, and realistic news headlines with short summaries (2-3 sentences each) for Colombia, covering politics, economy, social issues, and culture. Ensure variety in topics. Also, provide a placeholder URL for each article. Return as a JSON array of objects with 'title', 'summary', and 'url' keys.`;
+
+          const payload = {
+            contents: [{ role: "user", parts: [{ text: prompt }] }],
+            generationConfig: {
+              responseMimeType: "application/json",
+              responseSchema: {
+                type: "ARRAY",
+                items: {
+                  type: "OBJECT",
+                  properties: {
+                    "title": { "type": "STRING" },
+                    "summary": { "type": "STRING" },
+                    "url": { "type": "STRING" }
+                  },
+                  propertyOrdering: ["title", "summary", "url"]
+                }
+              }
+            }
+          };
+
+          const result = await callGeminiAPI(payload);
+          if (result.candidates && result.candidates.length > 0 &&
+            result.candidates[0].content && result.candidates[0].content.parts &&
+            result.candidates[0].content.parts.length > 0) {
+            const jsonString = result.candidates[0].content.parts[0].text;
+            const parsedNews = JSON.parse(jsonString);
+
+            const newsWithMetadata = parsedNews.map((article, index) => ({
+              ...article,
+              id: `news-${index}-${Date.now()}`,
+              timestamp: Date.now() - (Math.random() * (timeFilter === '24h' ? 86400000 : (timeFilter === '7d' ? 604800000 : (timeFilter === '30d' ? 2592000000 : 0)))),
+            }));
+            setNewsArticles(newsWithMetadata);
+            setMessage("News Refreshed!");
+            setMessageType("success");
+          } else {
+            setMessage("Failed to generate news articles.");
+            setMessageType("error");
+          }
+        } catch (error) {
+          console.error("Error fetching/generating news:", error);
+          setMessage("Error fetching news: " + error.message);
+          setMessageType("error");
+        } finally {
+          setLoading(false);
+          setShowModal(true);
+        }
+      };
+
+      const handleReadAloud = async (text) => {
+        setTtsLoading(true);
+        setTtsAudioUrl(null);
+        try {
+          const audioUrl = await callTtsApi(`Say in a neutral tone: ${text}`);
+          setTtsAudioUrl(audioUrl);
+          if (audioRef.current) {
+            audioRef.current.load();
+            audioRef.current.play();
+          }
+        } catch (error) {
+          console.error("Error reading aloud:", error);
+          setMessage("Failed to read article aloud.");
+          setMessageType("error");
+          setShowModal(true);
+        } finally {
+          setTtsLoading(false);
+        }
+      };
+
+      const handleDiscussArticle = async () => {
+        if (!discussionText.trim()) return;
+
+        setDiscussionLoading(true);
+        setDiscussionResponse('');
+        try {
+          const prompt = `Discuss the following news article: "${selectedArticle.title} - ${selectedArticle.summary}". User comment: "${discussionText}". Provide a concise and insightful response, encouraging further discussion.`;
+          const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
+          const result = await callGeminiAPI(payload);
+          if (result.candidates && result.candidates.length > 0 &&
+            result.candidates[0].content && result.candidates[0].content.parts &&
+            result.candidates[0].content.parts.length > 0) {
+            setDiscussionResponse(result.candidates[0].content.parts[0].text);
+          } else {
+            setDiscussionResponse("Could not generate a discussion response.");
+          }
+        } catch (error) {
+          console.error("Error discussing article:", error);
+          setDiscussionResponse("Error initiating discussion.");
+        } finally {
+          setDiscussionLoading(false);
+          setDiscussionText('');
+        }
+      };
+
+      React.useEffect(() => {
+        fetchNews();
+      }, [timeFilter]);
+
+      const filteredNews = newsArticles.filter(article => {
+        const ageMs = Date.now() - article.timestamp;
+        if (timeFilter === '24h') return ageMs <= 86400000;
+        if (timeFilter === '7d') return ageMs <= 604800000;
+        if (timeFilter === '30d') return ageMs <= 2592000000;
+        return true;
+      });
+
+      return (
+        <div className="p-4 bg-background-light min-h-screen">
+          <h2 className="text-4xl font-montserrat font-bold text-primary-dark text-center mb-8 pt-4 animate-fade-in-up border-b-4 border-accent-vibrant pb-2">Colombian News Hub</h2>
+
+          <div className="flex justify-center mb-6 space-x-3">
+            {['24h', '7d', '30d', 'all'].map(filter => (
+              <button
+                key={filter}
+                onClick={() => setTimeFilter(filter)}
+                className={`py-2 px-5 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 shadow-md
+                  ${timeFilter === filter
+                    ? 'bg-accent-vibrant text-white'
+                    : 'bg-white text-text-color border border-subtle-gray hover:bg-subtle-gray'
+                  }`}
+              >
+                {filter === 'all' ? 'All Time' : `Last ${filter}`}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex justify-center mb-8">
+            <button
+              onClick={fetchNews}
+              className="bg-accent-vibrant text-white py-3 px-8 rounded-full font-bold text-lg
+                         hover:bg-primary-light transition-all duration-300 transform hover:scale-105 shadow-lg"
+              disabled={loading}
+            >
+              {loading ? 'Refreshing...' : 'Refresh News'}
+            </button>
+          </div>
+
+          {loading && <LoadingSpinner text="Fetching latest news..." />}
+
+          {!loading && filteredNews.length === 0 && (
+            <p className="text-center text-text-color text-xl mt-10">No news articles found for the selected filter.</p>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredNews.map((article) => (
+              <div
+                key={article.id}
+                className="bg-card-bg p-6 rounded-lg shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border border-subtle-gray flex flex-col justify-between animate-fade-in"
+              >
+                <div>
+                  <h3 className="text-2xl font-bold text-primary-dark mb-3 leading-tight font-montserrat">{article.title}</h3>
+                  <p className="text-text-color text-md mb-4 font-poppins">{article.summary}</p>
+                </div>
+                <div className="flex flex-col sm:flex-row justify-between items-baseline mt-4 space-y-2 sm:space-y-0 sm:space-x-3">
+                  <a
+                    href={article.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="bg-primary-light text-white py-2 px-4 rounded-full text-sm font-semibold font-poppins
+                               hover:bg-primary-dark transition-all duration-300 transform hover:scale-105 flex-grow text-center"
+                  >
+                    Read More
+                  </a>
+                  <button
+                    onClick={() => setSelectedArticle(article)}
+                    className="bg-accent-vibrant text-white py-2 px-4 rounded-full text-sm font-semibold font-poppins
+                               hover:bg-primary-light transition-all duration-300 transform hover:scale-105 flex-grow text-center"
+                  >
+                    Discuss / Read Aloud
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {selectedArticle && (
+            <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center p-4 z-50 animate-fade-in">
+              <div className="bg-card-bg p-8 rounded-lg shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-zoom-in border border-subtle-gray">
+                <h3 className="text-3xl font-bold text-primary-dark mb-4 font-montserrat">{selectedArticle.title}</h3>
+                <p className="text-text-color mb-6 font-poppins">{selectedArticle.summary}</p>
+
+                <div className="mb-6 flex flex-col sm:flex-row gap-4">
+                  <button
+                    onClick={() => handleReadAloud(selectedArticle.title + ". " + selectedArticle.summary)}
+                    className="flex-1 bg-accent-vibrant text-white py-2 px-4 rounded-md font-semibold font-poppins
+                               hover:bg-primary-light transition-all duration-300 transform hover:scale-105 flex items-center justify-center"
+                    disabled={ttsLoading}
+                  >
+                    {ttsLoading ? (
+                      <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white mr-3"></div>
+                    ) : (
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M9.383 3.023A1 1 0 0110 3v14a1 1 0 01-1.383.977L5 15.5V4.5L9.383 3.023zM11 5a1 1 0 011-1h2a1 1 0 110 2h-2a1 1 0 01-1-1zm0 4a1 1 0 011-1h2a1 1 0 110 2h-2a1 1 0 01-1-1zm0 4a1 1 0 011-1h2a1 1 0 110 2h-2a1 1 0 01-1-1z" clipRule="evenodd" />
+                      </svg>
+                    )}
+                    Read Aloud
+                  </button>
+                  {ttsAudioUrl && (
+                    <audio ref={audioRef} controls src={ttsAudioUrl} className="flex-1 min-w-0 h-10"></audio>
+                  )}
+                </div>
+
+                <h4 className="text-xl font-bold text-primary-light mb-3 font-montserrat">Discuss this Article:</h4>
+                <textarea
+                  className="w-full p-3 border border-subtle-gray rounded-md mb-4 focus:ring-2 focus:ring-accent-vibrant transition-all duration-200 font-poppins"
+                  rows="4"
+                  placeholder="Share your thoughts or questions..."
+                  value={discussionText}
+                  onChange={(e) => setDiscussionText(e.target.value)}
+                ></textarea>
+                <button
+                  onClick={handleDiscussArticle}
+                  className="w-full bg-primary-light text-white py-2 px-4 rounded-md font-semibold font-poppins
+                             hover:bg-primary-dark transition-all duration-300 transform hover:scale-105 flex items-center justify-center"
+                  disabled={discussionLoading}
+                >
+                  {discussionLoading && <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white mr-3"></div>}
+                  Submit Discussion
+                </button>
+                {discussionResponse && (
+                  <div className="mt-4 p-4 bg-background-light border border-subtle-gray rounded-md text-text-color animate-fade-in font-poppins">
+                    <p className="font-semibold text-primary-dark mb-2">AI's Response:</p>
+                    <p>{discussionResponse}</p>
+                  </div>
+                )}
+                <button
+                  onClick={() => setSelectedArticle(null)}
+                  className="w-full mt-6 bg-subtle-gray text-text-color py-2 px-4 rounded-md font-semibold font-poppins
+                             hover:bg-primary-dark hover:text-white transition-all duration-300 transform hover:scale-105"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          )}
+
+          {showModal && (
+            <MessageModal
+              message={message}
+              type={messageType}
+              onClose={() => { setShowModal(false); setMessage(''); setMessageType(''); }}
+            />
+          )}
+        </div>
+      );
+    };
+
+    // --- Events Page Component ---
+    const EventsPage = () => {
+      const { db, userId, isAuthReady, appId } = useFirebase(); // Get appId from context
+      const [events, setEvents] = React.useState([]);
+      const [loading, setLoading] = React.useState(true);
+      const [showCreateForm, setShowCreateForm] = React.useState(false);
+      const [newEvent, setNewEvent] = React.useState({ title: '', date: '', time: '', description: '', location: '', imageUrl: '' });
+      const [message, setMessage] = React.useState('');
+      const [messageType, setMessageType] = React.useState('');
+      const [showModal, setShowModal] = React.useState(false);
+
+      const eventsCollectionPath = `/artifacts/${appId}/public/data/events`;
+
+      React.useEffect(() => {
+        if (!db || !isAuthReady || !appId) return; // Ensure appId is available
+
+        setLoading(true);
+        const q = collection(db, eventsCollectionPath);
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+          const fetchedEvents = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+            date: doc.data().date instanceof Date ? doc.data().date.toISOString().split('T')[0] : doc.data().date,
+          }));
+          setEvents(fetchedEvents);
+          setLoading(false);
+        }, (error) => {
+          console.error("Error fetching events:", error);
+          setMessage("Error fetching events: " + error.message);
+          setMessageType("error");
+          setShowModal(true);
+          setLoading(false);
+        });
+
+        return () => unsubscribe();
+      }, [db, isAuthReady, appId]);
+
+      const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setNewEvent(prev => ({ ...prev, [name]: value }));
+      };
+
+      const handleCreateEvent = async (e) => {
+        e.preventDefault();
+        if (!db || !userId) {
+          setMessage("Please log in to create events.");
+          setMessageType("error");
+          setShowModal(true);
+          return;
+        }
+
+        if (!newEvent.title || !newEvent.date || !newEvent.description || !newEvent.location) {
+          setMessage("Please fill in all required event fields.");
+          setMessageType("error");
+          setShowModal(true);
+          return;
+        }
+
+        try {
+          await addDoc(collection(db, eventsCollectionPath), {
+            ...newEvent,
+            hostId: userId,
+            timestamp: serverTimestamp(),
+          });
+          setMessage("Event created successfully!");
+          setMessageType("success");
+          setShowModal(true);
+          setNewEvent({ title: '', date: '', time: '', description: '', location: '', imageUrl: '' });
+          setShowCreateForm(false);
+        } catch (error) {
+          console.error("Error creating event:", error);
+          setMessage("Error creating event: " + error.message);
+          setMessageType("error");
+          setShowModal(true);
+        }
+      };
+
+      return (
+        <div className="p-4 bg-background-light min-h-screen">
+          <h2 className="text-4xl font-montserrat font-bold text-primary-dark text-center mb-8 pt-4 animate-fade-in-up border-b-4 border-accent-vibrant pb-2">Adriana's Events</h2>
+
+          <div className="flex justify-center mb-8">
+            <button
+              onClick={() => setShowCreateForm(!showCreateForm)}
+              className="bg-accent-vibrant text-white py-3 px-8 rounded-full font-bold text-lg
+                         hover:bg-primary-light transition-all duration-300 transform hover:scale-105 shadow-lg"
+            >
+              {showCreateForm ? 'Cancel Create Event' : 'Create New Event'}
+            </button>
+          </div>
+
+          {showCreateForm && (
+            <div className="bg-card-bg p-8 rounded-lg shadow-2xl max-w-2xl mx-auto mb-10 animate-fade-in border border-subtle-gray">
+              <h3 className="text-2xl font-bold text-primary-dark mb-6 text-center font-montserrat">Host an Event with Adriana Charry</h3>
+              <form onSubmit={handleCreateEvent} className="space-y-5">
+                <div>
+                  <label htmlFor="title" className="block text-text-color text-sm font-medium mb-2 font-poppins">Event Title</label>
+                  <input
+                    type="text"
+                    id="title"
+                    name="title"
+                    className="w-full p-3 border border-subtle-gray rounded-md focus:ring-2 focus:ring-accent-vibrant focus:border-transparent transition-all duration-200 font-poppins"
+                    value={newEvent.title}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <div>
+                    <label htmlFor="date" className="block text-text-color text-sm font-medium mb-2 font-poppins">Date</label>
+                    <input
+                      type="date"
+                      id="date"
+                      name="date"
+                      className="w-full p-3 border border-subtle-gray rounded-md focus:ring-2 focus:ring-accent-vibrant focus:border-transparent transition-all duration-200 font-poppins"
+                      value={newEvent.date}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="time" className="block text-text-color text-sm font-medium mb-2 font-poppins">Time (Optional)</label>
+                    <input
+                      type="time"
+                      id="time"
+                      name="time"
+                      className="w-full p-3 border border-subtle-gray rounded-md focus:ring-2 focus:ring-accent-vibrant focus:border-transparent transition-all duration-200 font-poppins"
+                      value={newEvent.time}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label htmlFor="location" className="block text-text-color text-sm font-medium mb-2 font-poppins">Location</label>
+                  <input
+                    type="text"
+                    id="location"
+                    name="location"
+                    className="w-full p-3 border border-subtle-gray rounded-md focus:ring-2 focus:ring-accent-vibrant focus:border-transparent transition-all duration-200 font-poppins"
+                    value={newEvent.location}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="description" className="block text-text-color text-sm font-medium mb-2 font-poppins">Description</label>
+                  <textarea
+                    id="description"
+                    name="description"
+                    rows="4"
+                    className="w-full p-3 border border-subtle-gray rounded-md focus:ring-2 focus:ring-accent-vibrant focus:border-transparent transition-all duration-200 font-poppins"
+                    value={newEvent.description}
+                    onChange={handleInputChange}
+                    required
+                  ></textarea>
+                </div>
+                <div>
+                  <label htmlFor="imageUrl" className="block text-text-color text-sm font-medium mb-2 font-poppins">Image URL (Optional)</label>
+                  <input
+                    type="text"
+                    id="imageUrl"
+                    name="imageUrl"
+                    className="w-full p-3 border border-subtle-gray rounded-md focus:ring-2 focus:ring-accent-vibrant focus:border-transparent transition-all duration-200 font-poppins"
+                    value={newEvent.imageUrl}
+                    onChange={handleInputChange}
+                    placeholder="https://example.com/event-image.jpg"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="w-full bg-accent-vibrant text-white py-3 px-6 rounded-md font-semibold font-poppins
+                             hover:bg-primary-light transition-all duration-300 transform hover:scale-105 shadow-lg"
+                >
+                  Create Event
+                </button>
+              </form>
+            </div>
+          )}
+
+          {loading && <LoadingSpinner text="Fetching events..." />}
+
+          {!loading && events.length === 0 && (
+            <p className="text-center text-text-color text-xl mt-10">No events found. Be the first to create one!</p>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {events.map((event) => (
+              <div
+                key={event.id}
+                className="bg-card-bg p-6 rounded-lg shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border border-subtle-gray flex flex-col justify-between animate-fade-in"
+              >
+                <div>
+                  {event.imageUrl ? (
+                    <img
+                      src={event.imageUrl}
+                      alt={event.title}
+                      className="w-full h-48 object-cover rounded-md mb-4"
+                      onError={(e) => { e.target.onerror = null; e.target.src = `https://placehold.co/600x400/D1D5DB/4B5563?text=Event+Image`; }}
+                    />
+                  ) : (
+                    <div className="w-full h-48 bg-subtle-gray rounded-md mb-4 flex items-center justify-center text-text-color text-lg font-poppins">
+                      No Image
+                    </div>
+                  )}
+                  <h3 className="text-2xl font-bold text-primary-dark mb-2 leading-tight font-montserrat">{event.title}</h3>
+                  <p className="text-sm text-gray-500 mb-4 font-poppins">{event.date} at {event.time || 'TBD'}</p>
+                  <p className="text-text-color text-md mb-4 font-poppins">{event.description}</p>
+                  <p className="text-primary-light font-semibold font-poppins">Location: {event.location}</p>
+                </div>
+                <div className="mt-4">
+                  <button
+                    className="w-full bg-primary-light text-white py-2 px-4 rounded-full text-sm font-semibold font-poppins
+                               hover:bg-primary-dark transition-all duration-300 transform hover:scale-105"
+                  >
+                    Join Event
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {showModal && (
+            <MessageModal
+              message={message}
+              type={messageType}
+              onClose={() => { setShowModal(false); setMessage(''); setMessageType(''); }}
+            />
+          )}
+        </div>
+      );
+    };
+
+    // --- Meetups List Page Component (Replaces MeetupMap) ---
+    const MeetupsPage = () => {
+        const { db, userId, isAuthReady, appId } = useFirebase(); // Get appId from context
+        const meetupsCollectionPath = `/artifacts/${appId}/public/data/meetups`; // Separate collection for meetups
+
+        const [meetups, setMeetups] = React.useState([]);
+        const [loading, setLoading] = React.useState(true);
+        const [showCreateForm, setShowCreateForm] = React.useState(false);
+        const [newMeetup, setNewMeetup] = React.useState({ title: '', description: '', location: '', date: '', time: '', imageUrl: '' });
+        const [message, setMessage] = React.useState('');
+        const [messageType, setMessageType] = React.useState('');
+        const [showModal, setShowModal] = React.useState(false);
+        const [formLoading, setFormLoading] = React.useState(false);
+
+        React.useEffect(() => {
+            if (!db || !isAuthReady || !appId) return; // Ensure appId is available
+
+            setLoading(true);
+            const q = collection(db, meetupsCollectionPath);
+            const unsubscribe = onSnapshot(q, (snapshot) => {
+                const fetchedMeetups = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data(),
+                    date: doc.data().date instanceof Date ? doc.data().date.toISOString().split('T')[0] : doc.data().date,
+                }));
+                setMeetups(fetchedMeetups);
+                setLoading(false);
+            }, (error) => {
+                console.error("Error fetching meetups:", error);
+                setMessage("Error fetching meetups: " + error.message);
+                setMessageType("error");
+                setShowModal(true);
+                setLoading(false);
+            });
+
+            return () => unsubscribe();
+        }, [db, isAuthReady, appId]);
+
+        const handleInputChange = (e) => {
+            const { name, value } = e.target;
+            setNewMeetup(prev => ({ ...prev, [name]: value }));
+        };
+
+        const handleCreateMeetup = async (e) => {
+            e.preventDefault();
+            if (!db || !userId) {
+                setMessage("Please log in to create meetups.");
+                setMessageType("error");
+                setShowModal(true);
+                return;
+            }
+
+            if (!newMeetup.title || !newMeetup.description || !newMeetup.location || !newMeetup.date) {
+                setMessage("Please fill in all required fields.");
+                setMessageType("error");
+                setShowModal(true);
+                return;
+            }
+
+            setFormLoading(true);
+            try {
+                await addDoc(collection(db, meetupsCollectionPath), {
+                    ...newMeetup,
+                    hostId: userId,
+                    timestamp: serverTimestamp(),
+                });
+
+                setMessage("Meetup created successfully!");
+                setMessageType("success");
+                setShowModal(true);
+                setNewMeetup({ title: '', description: '', location: '', date: '', time: '', imageUrl: '' });
+                setShowCreateForm(false);
+
+            } catch (error) {
+                console.error("Error creating meetup:", error);
+                setMessage("Error creating meetup: " + error.message);
+                setMessageType("error");
+                setShowModal(true);
+            } finally {
+                setFormLoading(false);
+            }
+        };
+
+        return (
+            <div className="p-4 bg-background-light min-h-screen">
+                <h2 className="text-4xl font-montserrat font-bold text-primary-dark text-center mb-8 pt-4 animate-fade-in-up border-b-4 border-accent-vibrant pb-2">Community Meetups</h2>
+
+                <div className="flex justify-center mb-8">
+                    <button
+                        onClick={() => setShowCreateForm(!showCreateForm)}
+                        className="bg-accent-vibrant text-white py-3 px-8 rounded-full font-bold text-lg
+                                   hover:bg-primary-light transition-all duration-300 transform hover:scale-105 shadow-lg"
+                    >
+                        {showCreateForm ? 'Cancel Create Meetup' : 'Create New Meetup'}
+                    </button>
+                </div>
+
+                {showCreateForm && (
+                    <div className="bg-card-bg p-8 rounded-lg shadow-2xl max-w-2xl mx-auto mb-10 animate-fade-in border border-subtle-gray">
+                        <h3 className="text-2xl font-bold text-primary-dark mb-6 text-center font-montserrat">Add a New Meetup</h3>
+                        <form onSubmit={handleCreateMeetup} className="space-y-5">
+                            <div>
+                                <label htmlFor="title" className="block text-text-color text-sm font-medium mb-2 font-poppins">Meetup Title</label>
+                                <input
+                                    type="text"
+                                    id="title"
+                                    name="title"
+                                    className="w-full p-3 border border-subtle-gray rounded-md focus:ring-2 focus:ring-accent-vibrant transition-all duration-200 font-poppins"
+                                    value={newMeetup.title}
+                                    onChange={handleInputChange}
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label htmlFor="description" className="block text-text-color text-sm font-medium mb-2 font-poppins">Description</label>
+                                <textarea
+                                    id="description"
+                                    name="description"
+                                    rows="4"
+                                    className="w-full p-3 border border-subtle-gray rounded-md focus:ring-2 focus:ring-accent-vibrant transition-all duration-200 font-poppins"
+                                    value={newMeetup.description}
+                                    onChange={handleInputChange}
+                                    required
+                                ></textarea>
+                            </div>
+                            <div>
+                                <label htmlFor="location" className="block text-text-color text-sm font-medium mb-2 font-poppins">Location</label>
+                                <input
+                                    type="text"
+                                    id="location"
+                                    name="location"
+                                    className="w-full p-3 border border-subtle-gray rounded-md focus:ring-2 focus:ring-accent-vibrant transition-all duration-200 font-poppins"
+                                    value={newMeetup.location}
+                                    onChange={handleInputChange}
+                                    required
+                                />
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                <div>
+                                    <label htmlFor="date" className="block text-text-color text-sm font-medium mb-2 font-poppins">Date</label>
+                                    <input
+                                        type="date"
+                                        id="date"
+                                        name="date"
+                                        className="w-full p-3 border border-subtle-gray rounded-md focus:ring-2 focus:ring-accent-vibrant focus:border-transparent transition-all duration-200 font-poppins"
+                                        value={newMeetup.date}
+                                        onChange={handleInputChange}
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label htmlFor="time" className="block text-text-color text-sm font-medium mb-2 font-poppins">Time (Optional)</label>
+                                    <input
+                                        type="time"
+                                        id="time"
+                                        name="time"
+                                        className="w-full p-3 border border-subtle-gray rounded-md focus:ring-2 focus:ring-accent-vibrant focus:border-transparent transition-all duration-200 font-poppins"
+                                        value={newMeetup.time}
+                                        onChange={handleInputChange}
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label htmlFor="imageUrl" className="block text-text-color text-sm font-medium mb-2 font-poppins">Image URL (Optional)</label>
+                                <input
+                                    type="text"
+                                    id="imageUrl"
+                                    name="imageUrl"
+                                    className="w-full p-3 border border-subtle-gray rounded-md focus:ring-2 focus:ring-accent-vibrant focus:border-transparent transition-all duration-200 font-poppins"
+                                    value={newMeetup.imageUrl}
+                                    onChange={handleInputChange}
+                                    placeholder="https://example.com/meetup-image.jpg"
+                                />
+                            </div>
+                            <button
+                                type="submit"
+                                className="w-full bg-accent-vibrant text-white py-3 px-6 rounded-md font-semibold font-poppins
+                                           hover:bg-primary-light transition-all duration-300 transform hover:scale-105 shadow-lg"
+                                disabled={formLoading}
+                            >
+                                {formLoading ? 'Creating...' : 'Create Meetup'}
+                            </button>
+                        </form>
+                    </div>
+                )}
+
+                {loading && <LoadingSpinner text="Fetching meetups..." />}
+
+                {!loading && meetups.length === 0 && (
+                    <p className="text-center text-text-color text-xl mt-10">No meetups scheduled yet. Be the first to create one!</p>
+                )}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {meetups.map((meetup) => (
+                        <div
+                            key={meetup.id}
+                            className="bg-card-bg p-6 rounded-lg shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border border-subtle-gray flex flex-col justify-between animate-fade-in"
+                        >
+                            <div>
+                                {meetup.imageUrl ? (
+                                    <img
+                                        src={meetup.imageUrl}
+                                        alt={meetup.title}
+                                        className="w-full h-48 object-cover rounded-md mb-4"
+                                        onError={(e) => { e.target.onerror = null; e.target.src = `https://placehold.co/600x400/D1D5DB/4B5563?text=Meetup+Image`; }}
+                                    />
+                                ) : (
+                                    <div className="w-full h-48 bg-subtle-gray rounded-md mb-4 flex items-center justify-center text-text-color text-lg font-poppins">
+                                        No Image
+                                    </div>
+                                )}
+                                <h3 className="text-2xl font-bold text-primary-dark mb-2 leading-tight font-montserrat">{meetup.title}</h3>
+                                <p className="text-sm text-gray-500 mb-4 font-poppins">{meetup.date} at {meetup.time || 'TBD'}</p>
+                                <p className="text-text-color text-md mb-4 font-poppins">{meetup.description}</p>
+                                <p className="text-primary-light font-semibold font-poppins">Location: {meetup.location}</p>
+                            </div>
+                            <div className="mt-4">
+                                <button
+                                    className="w-full bg-primary-light text-white py-2 px-4 rounded-full text-sm font-semibold font-poppins
+                                               hover:bg-primary-dark transition-all duration-300 transform hover:scale-105"
+                                >
+                                    View Details
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {showModal && (
+                    <MessageModal
+                        message={message}
+                        type={messageType}
+                        onClose={() => { setShowModal(false); setMessage(''); setMessageType(''); }}
+                    />
+                )}
+            </div>
+        );
+    };
+
+    // --- Community Feed Component ---
+    const CommunityFeed = () => {
+        const { db, userId, isAuthReady, appId } = useFirebase(); // Get appId from context
+        const [posts, setPosts] = React.useState([]);
+        const [loading, setLoading] = React.useState(true);
+        const [newPostContent, setNewPostContent] = React.useState('');
+        const [message, setMessage] = React.useState(''); // State for MessageModal
+        const [messageType, setMessageType] = React.useState(''); // State for MessageModal type
+        const [showModal, setShowModal] = React.useState(false); // State for MessageModal visibility
+        const postsCollectionPath = `/artifacts/${appId}/public/data/community-posts`;
+
+        React.useEffect(() => {
+            if (!db || !isAuthReady || !appId) return; // Ensure appId is available
+
+            setLoading(true);
+            const q = collection(db, postsCollectionPath);
+            const unsubscribe = onSnapshot(q, (snapshot) => {
+                const fetchedPosts = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data(),
+                    timestamp: doc.data().timestamp ? doc.data().timestamp.toDate() : new Date(),
+                })).sort((a, b) => b.timestamp - a.timestamp);
+                setPosts(fetchedPosts);
+                setLoading(false);
+            }, (error) => {
+                console.error("Error fetching community posts:", error);
+                setMessage("Error fetching community posts.");
+                setMessageType("error");
+                setShowModal(true);
+                setLoading(false);
+            });
+
+            return () => unsubscribe();
+        }, [db, isAuthReady, appId]);
+
+        const handlePostSubmit = async (e) => {
+            e.preventDefault();
+            if (!newPostContent.trim() || !userId) {
+                setMessage("Post cannot be empty."); // Changed from alert
+                setMessageType("error");
+                setShowModal(true);
+                return;
+            }
+
+            try {
+                await addDoc(collection(db, postsCollectionPath), {
+                    content: newPostContent,
+                    authorId: userId,
+                    timestamp: serverTimestamp(),
+                });
+                setNewPostContent('');
+                setMessage("Post created successfully!");
+                setMessageType("success");
+                setShowModal(true);
+            } catch (error) {
+                console.error("Error adding post:", error);
+                setMessage("Failed to post. Please try again: " + error.message);
+                setMessageType("error");
+                setShowModal(true);
+            }
+        };
+
+        return (
+            <div className="p-4 bg-background-light min-h-screen">
+                <h2 className="text-4xl font-montserrat font-bold text-primary-dark text-center mb-8 pt-4 animate-fade-in-up border-b-4 border-accent-vibrant pb-2">Community Feed</h2>
+
+                <div className="max-w-xl mx-auto mb-10 p-6 bg-card-bg rounded-lg shadow-xl animate-fade-in-up border border-subtle-gray">
+                    <h3 className="text-2xl font-montserrat font-bold text-primary-dark mb-4">Share Your Thoughts</h3>
+                    <form onSubmit={handlePostSubmit}>
+                        <textarea
+                            className="w-full p-4 border border-subtle-gray rounded-md mb-4 focus:ring-2 focus:ring-accent-vibrant transition-all duration-200 font-poppins"
+                            rows="4"
+                            placeholder="What's on your mind?..."
+                            value={newPostContent}
+                            onChange={(e) => setNewPostContent(e.target.value)}
+                            required
+                        ></textarea>
+                        <button
+                            type="submit"
+                            className="w-full bg-accent-vibrant text-white py-3 px-6 rounded-md font-semibold font-poppins
+                                       hover:bg-primary-light transition-all duration-300 transform hover:scale-105 shadow-lg"
+                        >
+                            Post to Feed
+                        </button>
+                    </form>
+                </div>
+
+                {loading && <LoadingSpinner text="Loading community posts..." />}
+
+                {!loading && posts.length === 0 && (
+                    <p className="text-center text-text-color text-xl mt-10">No posts yet. Be the first to share something!</p>
+                )}
+
+                {!loading && (
+                    <div className="max-w-xl mx-auto space-y-6">
+                        {posts.map((post) => (
+                            <div key={post.id} className="bg-card-bg p-6 rounded-lg shadow-lg border border-subtle-gray animate-fade-in">
+                                <p className="text-text-color mb-3 font-poppins">{post.content}</p>
+                                <p className="text-sm text-gray-400 font-poppins">
+                                    Posted by an anonymous user {post.timestamp.toLocaleString()}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+                )}
+                {showModal && ( // Render MessageModal for CommunityFeed
+                    <MessageModal
+                        message={message}
+                        type={messageType}
+                        onClose={() => { setShowModal(false); setMessage(''); setMessageType(''); }}
+                    />
+                )}
+            </div>
+        );
+    };
+
+    // --- Reels Component ---
+    const Reels = () => {
+        const [reel, setReel] = React.useState(null);
+        const [loading, setLoading] = React.useState(false);
+        const [message, setMessage] = React.useState('');
+        const [messageType, setMessageType] = React.useState('');
+        const [showModal, setShowModal] = React.useState(false);
+
+        const generateReel = async () => {
+            setLoading(true);
+            setReel(null);
+            setMessage('');
+            setMessageType('');
+
+            try {
+                const promptResponse = await callGeminiAPI({
+                    contents: [{
+                        role: "user",
+                        parts: [
+                            { text: "Generate a prompt for a visually appealing and dynamic reel, focused on a positive, vibrant topic related to Colombian culture or landscapes. Also, provide a short, catchy title and a summary for the reel. Return a JSON object with 'imagePrompt', 'title', and 'description'." }
+                        ]
+                    }],
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: "OBJECT",
+                            properties: {
+                                "imagePrompt": { "type": "STRING" },
+                                "title": { "type": "STRING" },
+                                "description": { "type": "STRING" }
+                            }
+                        }
+                    }
+                });
+
+                const { imagePrompt, title, description } = JSON.parse(promptResponse.candidates[0].content.parts[0].text);
+
+                const imageUrl = await callImagenAPI(imagePrompt);
+
+                setReel({ imageUrl, title, description });
+                setLoading(false);
+                setMessage("Reel generated successfully!");
+                setMessageType("success");
+
+            } catch (error) {
+                console.error("Error generating reel:", error);
+                setLoading(false);
+                setMessage("Failed to generate reel: " + error.message);
+                setMessageType("error");
+            } finally {
+                setShowModal(true);
+            }
+        };
+
+        React.useEffect(() => {
+            generateReel();
+        }, []);
+
+        return (
+            <div className="p-4 bg-background-light min-h-screen">
+                <h2 className="text-4xl font-montserrat font-bold text-primary-dark text-center mb-8 pt-4 animate-fade-in-up border-b-4 border-accent-vibrant pb-2">Reels</h2>
+
+                <div className="flex justify-center mb-8">
+                    <button
+                        onClick={generateReel}
+                        className="bg-accent-vibrant text-white py-3 px-8 rounded-full font-bold text-lg
+                                   hover:bg-primary-light transition-all duration-300 transform hover:scale-105 shadow-lg"
+                        disabled={loading}
+                    >
+                        {loading ? 'Generating...' : 'Generate New Reel'}
+                    </button>
+                </div>
+
+                {loading && <LoadingSpinner text="Crafting your dynamic reel..." />}
+
+                {!loading && reel && (
+                    <div className="max-w-lg mx-auto bg-card-bg rounded-lg shadow-xl overflow-hidden animate-fade-in border border-subtle-gray">
+                        <img src={reel.imageUrl} alt={reel.title} className="w-full object-cover max-h-[70vh]" />
+                        <div className="p-6">
+                            <h3 className="text-2xl font-bold font-montserrat text-primary-dark mb-2">{reel.title}</h3>
+                            <p className="text-text-color font-poppins">{reel.description}</p>
+                        </div>
+                    </div>
+                )}
+
+                {showModal && (
+                    <MessageModal
+                        message={message}
+                        type={messageType}
+                        onClose={() => { setShowModal(false); setMessage(''); setMessageType(''); }}
+                    />
+                )}
+            </div>
+        );
+    };
+
+    // --- Chat Component ---
+    const Chat = () => {
+        const { db, userId, isAuthReady, appId } = useFirebase(); // Get appId from context
+        const [messages, setMessages] = React.useState([]);
+        const [newMessage, setNewMessage] = React.useState('');
+        const [loading, setLoading] = React.useState(true);
+        const messagesEndRef = React.useRef(null);
+        const chatContainerRef = React.useRef(null);
+
+        const chatCollectionPath = `/artifacts/${appId}/public/data/chat`;
+
+        React.useEffect(() => {
+            if (!db || !isAuthReady || !appId) return; // Ensure appId is available
+            setLoading(true);
+
+            const q = collection(db, chatCollectionPath);
+            const unsubscribe = onSnapshot(q, (snapshot) => {
+                const fetchedMessages = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data(),
+                    timestamp: doc.data().timestamp ? doc.data().timestamp.toDate() : new Date(),
+                })).sort((a, b) => a.timestamp - b.timestamp);
+                setMessages(fetchedMessages);
+                setLoading(false);
+            }, (error) => {
+                console.error("Error fetching chat messages:", error);
+                setLoading(false);
+            });
+
+            return () => unsubscribe();
+        }, [db, isAuthReady, appId]);
+
+        React.useEffect(() => {
+            if (messagesEndRef.current) {
+                messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+            }
+        }, [messages]);
+
+        const handleSendMessage = async (e) => {
+            e.preventDefault();
+            if (!newMessage.trim() || !userId) return;
+
+            try {
+                await addDoc(collection(db, chatCollectionPath), {
+                    content: newMessage,
+                    authorId: userId,
+                    timestamp: serverTimestamp(),
+                });
+                setNewMessage('');
+            } catch (error) {
+                console.error("Error sending message:", error);
+            }
+        };
+
+        return (
+            <div className="p-4 bg-background-light min-h-screen flex flex-col">
+                <h2 className="text-4xl font-montserrat font-bold text-primary-dark text-center mb-8 pt-4 animate-fade-in-up border-b-4 border-accent-vibrant pb-2">Global Chat</h2>
+
+                <div ref={chatContainerRef} className="flex-grow flex flex-col p-4 space-y-4 overflow-y-auto custom-scrollbar bg-card-bg rounded-lg shadow-inner border border-subtle-gray">
+                    {loading && <LoadingSpinner text="Loading chat history..." />}
+
+                    {!loading && messages.length === 0 && (
+                        <p className="text-center text-gray-500 mt-auto">Say hello! Be the first to send a message.</p>
+                    )}
+
+                    {!loading && messages.map((msg, index) => {
+                        const isUserMessage = msg.authorId === userId;
+                        const messageClass = isUserMessage ? 'bg-primary-light text-white ml-auto' : 'bg-subtle-gray text-text-color';
+
+                        return (
+                            <div key={msg.id} className={`max-w-[75%] p-3 rounded-lg shadow-sm font-poppins animate-fade-in ${messageClass}`}>
+                                <p>{msg.content}</p>
+                                <span className="block text-xs text-opacity-70 mt-1">
+                                    {isUserMessage ? 'You' : 'Anonymous User'} • {msg.timestamp.toLocaleTimeString()}
+                                </span>
+                            </div>
+                        );
+                    })}
+                    <div ref={messagesEndRef} />
+                </div>
+
+                <form onSubmit={handleSendMessage} className="mt-4 flex gap-4">
+                    <input
+                        type="text"
+                        className="flex-grow p-4 border border-subtle-gray rounded-full focus:ring-2 focus:ring-accent-vibrant transition-all duration-200 font-poppins"
+                        placeholder="Type a message..."
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        required
+                    />
+                    <button
+                        type="submit"
+                        className="bg-accent-vibrant text-white py-3 px-8 rounded-full font-bold font-poppins
+                                   hover:bg-primary-light transition-all duration-300 transform hover:scale-105 shadow-lg"
+                    >
+                        Send
+                    </button>
+                </form>
+            </div>
+        );
+    };
+
+    // --- Weekly Debate Component ---
+    const WeeklyDebate = () => {
+        const { db, userId, isAuthReady, appId } = useFirebase(); // Get appId from context
+        const debateCollectionPath = `/artifacts/${appId}/public/data/debates`;
+        const debateDocId = 'currentDebate';
+        const [debate, setDebate] = React.useState(null);
+        const [hasVoted, setHasVoted] = React.useState(false);
+        const [loading, setLoading] = React.useState(true);
+        const [message, setMessage] = React.useState('');
+        const [messageType, setMessageType] = React.useState('');
+        const [showModal, setShowModal] = React.useState(false);
+
+        React.useEffect(() => {
+            if (!db || !isAuthReady || !appId) return; // Ensure appId is available
+
+            const debateRef = doc(db, debateCollectionPath, debateDocId);
+            const unsubscribe = onSnapshot(debateRef, async (docSnapshot) => {
+                if (docSnapshot.exists()) {
+                    setDebate(docSnapshot.data());
+                    
+                    // Standardized collection path for user's votes
+                    const userVoteRef = doc(db, `/artifacts/${appId}/users/${userId}/debate_votes`, debateDocId);
+                    const userVoteDoc = await getDoc(userVoteRef);
+                    setHasVoted(userVoteDoc.exists());
+                } else {
+                    console.warn("Debate document not found. Please create one in Firestore.");
+                }
+                setLoading(false);
+            });
+
+            return () => unsubscribe();
+        }, [db, userId, isAuthReady, appId]);
+
+        const handleVote = async (side) => {
+            if (hasVoted) {
+                setMessage("You have already voted in this debate.");
+                setMessageType("error");
+                setShowModal(true);
+                return;
+            }
+            if (!userId) {
+                setMessage("You must be logged in to vote.");
+                setMessageType("error");
+                setShowModal(true);
+                return;
+            }
+
+            const debateRef = doc(db, debateCollectionPath, debateDocId);
+            // Standardized collection path for user's votes
+            const userVoteRef = doc(db, `/artifacts/${appId}/users/${userId}/debate_votes`, debateDocId);
+            
+            try {
+                await runTransaction(db, async (transaction) => {
+                    const currentDebateDoc = await transaction.get(debateRef);
+                    if (!currentDebateDoc.exists()) {
+                        throw "Debate does not exist!";
+                    }
+
+                    const newVoteCount = currentDebateDoc.data()[side] + 1;
+                    transaction.update(debateRef, { [side]: newVoteCount });
+                    transaction.set(userVoteRef, { votedAt: serverTimestamp() });
+                });
+
+                setMessage("Your vote has been cast! Thank you for participating.");
+                setMessageType("success");
+                setShowModal(true);
+            } catch (e) {
+                console.error("Transaction failed: ", e);
+                setMessage("Failed to cast vote. Please try again.");
+                setMessageType("error");
+                setShowModal(true);
+            }
+        };
+
+        if (loading) {
+            return <LoadingSpinner text="Loading debate..." />;
+        }
+
+        if (!debate) {
+             return <p className="text-center text-text-color text-xl mt-10">Debate topic not found. An administrator needs to set up the first debate in Firestore.</p>;
+        }
+
+        const totalVotes = debate.for_votes + debate.against_votes;
+        const forPercent = totalVotes > 0 ? (debate.for_votes / totalVotes) * 100 : 0;
+        const againstPercent = totalVotes > 0 ? (debate.against_votes / totalVotes) * 100 : 0;
+
+        return (
+            <div className="p-4 bg-background-light min-h-screen text-center">
+                <h2 className="text-4xl font-montserrat font-bold text-primary-dark pt-4 mb-8 border-b-4 border-accent-vibrant pb-2">Weekly Debate</h2>
+                <div className="max-w-3xl mx-auto p-8 bg-card-bg rounded-lg shadow-lg">
+                    <h3 className="text-2xl font-bold text-primary-dark mb-6 font-poppins">{debate.topic}</h3>
+                    <div className="space-y-4">
+                        <button
+                            onClick={() => handleVote('for_votes')}
+                            className={`w-full py-4 px-6 rounded-lg text-lg font-semibold transition-all duration-300 transform hover:scale-105 ${hasVoted ? 'bg-subtle-gray text-text-color cursor-not-allowed' : 'bg-green-500 text-white hover:bg-green-600'}`}
+                            disabled={hasVoted}
+                        >
+                            <span className="mr-2">👍</span> {debate.for_side}
+                        </button>
+                        <button
+                            onClick={() => handleVote('against_votes')}
+                            className={`w-full py-4 px-6 rounded-lg text-lg font-semibold transition-all duration-300 transform hover:scale-105 ${hasVoted ? 'bg-subtle-gray text-text-color cursor-not-allowed' : 'bg-red-500 text-white hover:bg-red-600'}`}
+                            disabled={hasVoted}
+                        >
+                            <span className="mr-2">👎</span> {debate.against_side}
+                        </button>
+                    </div>
+                    {hasVoted && (
+                        <div className="mt-8 text-left space-y-2 text-text-color font-poppins">
+                            <p className="font-semibold text-lg">Results:</p>
+                            <div className="flex items-center">
+                                <span className="w-16 mr-4">{debate.for_side}</span>
+                                <div className="flex-grow bg-subtle-gray rounded-full h-8">
+                                    <div className="bg-green-500 h-8 rounded-full transition-all duration-500" style={{ width: `${forPercent}%` }}></div>
+                                }
+                                <span className="ml-4 font-bold">{forPercent.toFixed(1)}%</span>
+                            </div>
+                            <div className="flex items-center">
+                                <span className="w-16 mr-4">{debate.against_side}</span>
+                                <div className="flex-grow bg-subtle-gray rounded-full h-8">
+                                    <div className="bg-red-500 h-8 rounded-full transition-all duration-500" style={{ width: `${againstPercent}%` }}></div>
+                                </div>
+                                <span className="ml-4 font-bold">{againstPercent.toFixed(1)}%</span>
+                            </div>
+                        </div>
+                    )}
+                </div>
+                {showModal && (
+                    <MessageModal
+                        message={message}
+                        type={messageType}
+                        onClose={() => { setShowModal(false); setMessage(''); setMessageType(''); }}
+                    />
+                )}
+            </div>
+        );
+    };
+
+    // --- Pedro Poll Component ---
+    const PedroPoll = () => {
+        const { db, userId, isAuthReady, appId } = useFirebase(); // Get appId from context
+        const pollCollectionPath = `/artifacts/${appId}/public/data/polls`;
+        const pollDocId = 'currentPoll';
+        const [poll, setPoll] = React.useState(null);
+        const [hasVoted, setHasVoted] = React.useState(false);
+        const [loading, setLoading] = React.useState(true);
+        const [message, setMessage] = React.useState('');
+        const [messageType, setMessageType] = React.useState('');
+        const [showModal, setShowModal] = React.useState(false);
+
+        React.useEffect(() => {
+            if (!db || !isAuthReady || !appId) return; // Ensure appId is available
+
+            const pollRef = doc(db, pollCollectionPath, pollDocId);
+            const unsubscribe = onSnapshot(pollRef, async (docSnapshot) => {
+                if (docSnapshot.exists()) {
+                    setPoll(docSnapshot.data());
+
+                    // Standardized collection path for user's votes
+                    const userVoteRef = doc(db, `/artifacts/${appId}/users/${userId}/poll_votes`, pollDocId);
+                    const userVoteDoc = await getDoc(userVoteRef);
+                    setHasVoted(userVoteDoc.exists());
+                } else {
+                    console.warn("Poll document not found. Please create one in Firestore.");
+                }
+                setLoading(false);
+            });
+
+            return () => unsubscribe();
+        }, [db, userId, isAuthReady, appId]);
+
+        const handleVote = async (optionIndex) => {
+            if (hasVoted) {
+                setMessage("You have already voted in this poll.");
+                setMessageType("error");
+                setShowModal(true);
+                return;
+            }
+            if (!userId) {
+                setMessage("You must be logged in to vote.");
+                setMessageType("error");
+                setShowModal(true);
+                return;
+            }
+
+            const pollRef = doc(db, pollCollectionPath, pollDocId);
+            // Standardized collection path for user's votes
+            const userVoteRef = doc(db, `/artifacts/${appId}/users/${userId}/poll_votes`, pollDocId);
+            
+            try {
+                await runTransaction(db, async (transaction) => {
+                    const currentPollDoc = await transaction.get(pollRef);
+                    if (!currentPollDoc.exists()) {
+                        throw "Poll does not exist!";
+                    }
+                    const newOptions = [...currentPollDoc.data().options];
+                    newOptions[optionIndex].votes += 1;
+
+                    transaction.update(pollRef, { options: newOptions });
+                    transaction.set(userVoteRef, { votedAt: serverTimestamp(), option: optionIndex });
+                });
+
+                setMessage("Your vote has been cast! Thank you for participating.");
+                setMessageType("success");
+                setShowModal(true);
+            } catch (e) {
+                console.error("Transaction failed: ", e);
+                setMessage("Failed to cast vote. Please try again.");
+                setMessageType("error");
+                setShowModal(true);
+            }
+        };
+
+        if (loading) {
+            return <LoadingSpinner text="Loading poll..." />;
+        }
+
+        if (!poll) {
+            return <p className="text-center text-text-color text-xl mt-10">Poll topic not found. An administrator needs to set up the first poll in Firestore.</p>;
+        }
+        
+        const totalVotes = poll.options.reduce((sum, option) => sum + option.votes, 0);
+
+        return (
+            <div className="p-4 bg-background-light min-h-screen text-center">
+                <h2 className="text-4xl font-montserrat font-bold text-primary-dark pt-4 mb-8 border-b-4 border-accent-vibrant pb-2">Pedro Poll</h2>
+                <div className="max-w-3xl mx-auto p-8 bg-card-bg rounded-lg shadow-lg">
+                    <h3 className="text-2xl font-bold text-primary-dark mb-6 font-poppins">{poll.question}</h3>
+                    <div className="space-y-4">
+                        {poll.options.map((option, index) => {
+                            const percent = totalVotes > 0 ? (option.votes / totalVotes) * 100 : 0;
+                            return (
+                                <div key={index}>
+                                    <button
+                                        onClick={() => handleVote(index)}
+                                        className={`w-full py-4 px-6 rounded-lg text-lg font-semibold transition-all duration-300 transform hover:scale-105 ${hasVoted ? 'bg-subtle-gray text-text-color cursor-not-allowed' : 'bg-primary-light text-white hover:bg-primary-dark'}`}
+                                        disabled={hasVoted}
+                                    >
+                                        {option.title}
+                                    </button>
+                                    {hasVoted && (
+                                        <div className="w-full bg-subtle-gray rounded-full mt-2 h-8 relative">
+                                            <div className="bg-accent-vibrant h-8 rounded-full transition-all duration-500" style={{ width: `${percent}%` }}></div>
+                                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white font-bold">{option.votes} votes</span>
+                                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-primary-dark font-bold">{percent.toFixed(1)}%</span>
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+                {showModal && (
+                    <MessageModal
+                        message={message}
+                        type={messageType}
+                        onClose={() => { setShowModal(false); setMessage(''); setMessageType(''); }}
+                    />
+                )}
+            </div>
+        );
+    };
+
+    // --- Legislative Component (Simplified Placeholder) ---
+    const Legislative = () => {
+        // This component is simplified to a placeholder to avoid immediate errors
+        // from fetching `firebaseConfig.cloudFunctionsUrl` which isn't defined
+        // in this environment. For full functionality, a backend Cloud Function
+        // would need to be deployed separately.
+        const [message, setMessage] = React.useState('For official legislative updates, please visit the Colombian Congress\'s official YouTube channel.');
+
+        return (
+            <div className="p-4 bg-background-light min-h-screen flex flex-col items-center justify-center">
+                <h2 className="text-4xl font-montserrat font-bold text-primary-dark text-center mb-8 pt-4 animate-fade-in-up border-b-4 border-accent-vibrant pb-2">Legislative News</h2>
+                <p className="text-xl text-text-color mb-6 text-center max-w-2xl leading-relaxed animate-fade-in font-poppins">
+                  {message}
+                </p>
+                <a
+                  href="https://www.youtube.com/@congresocolombiaoficial"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-accent-vibrant text-white py-4 px-10 rounded-full text-xl font-bold font-poppins
+                             hover:bg-primary-light transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 mr-3" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                  </svg>
+                  Visit Official YouTube Channel
+                </a>
+            </div>
+        );
+    };
+
+    // --- Friends Component ---
+    const Friends = () => {
+        const { db, userId, isAuthReady, friends, pendingRequests, appId } = useFirebase(); // Get appId from context
+        const [loading, setLoading] = React.useState(false);
+        const [message, setMessage] = React.useState('');
+        const [messageType, setMessageType] = React.useState('');
+        const [showModal, setShowModal] = React.useState(false);
+
+        // Standardized base path for user-specific collections
+        const getUserCollectionBasePath = (targetUserId) => `/artifacts/${appId}/users/${targetUserId}`;
+
+
+        const handleSendFriendRequest = async () => {
+            if (!userId) {
+                setMessage("You must be logged in to send a request.");
+                setMessageType("error");
+                setShowModal(true);
+                return;
+            }
+
+            // ⭐ IMPORTANT: In a real app, you would have a way to input or select a recipient ID.
+            // For now, this hardcoded 'user-2' is for demonstration.
+            const recipientId = 'user-2'; // Placeholder - replace with a way to find other users!
+
+            if (userId === recipientId) {
+                setMessage("You cannot send a friend request to yourself.");
+                setMessageType("error");
+                setShowModal(true);
+                return;
+            }
+
+            setLoading(true);
+            try {
+                // Check if a request already exists from either side or if already friends
+                const requestFromUserRef = doc(db, `${getUserCollectionBasePath(userId)}/friends`, recipientId);
+                const requestToUserRef = doc(db, `${getUserCollectionBasePath(recipientId)}/friends`, userId);
+
+                const [requestFromUserDoc, requestToUserDoc] = await Promise.all([
+                    getDoc(requestFromUserRef),
+                    getDoc(requestToUserRef)
+                ]);
+
+                if (requestFromUserDoc.exists() && requestFromUserDoc.data().status === 'pending') {
+                    setMessage("You already sent a request to this user.");
+                    setMessageType("error");
+                    setShowModal(true);
+                } else if (requestFromUserDoc.exists() && requestFromUserDoc.data().status === 'accepted') {
+                     setMessage("You are already friends with this user.");
+                     setMessageType("error");
+                     setShowModal(true);
+                } else if (requestToUserDoc.exists() && requestToUserDoc.data().status === 'pending') {
+                    setMessage("This user has already sent you a friend request. Check your pending requests!");
+                    setMessageType("error");
+                    setShowModal(true);
+                } else {
+                    // Send request - recipient gets a 'pending' entry from `userId`
+                    await setDoc(requestToUserRef, {
+                        requesterId: userId,
+                        status: 'pending',
+                        timestamp: serverTimestamp(),
+                    });
+                    setMessage("Friend request sent!");
+                    setMessageType("success");
+                    setShowModal(true);
+                }
+            } catch (error) {
+                console.error("Error sending friend request:", error);
+                setMessage("Failed to send friend request: " + error.message);
+                setMessageType("error");
+                setShowModal(true);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        const handleAcceptRequest = async (requestId) => {
+            if (!userId) return;
+
+            setLoading(true);
+            try {
+                // Update the request in current user's (acceptor's) friends subcollection
+                const requestRef = doc(db, `${getUserCollectionBasePath(userId)}/friends`, requestId);
+                await updateDoc(requestRef, { status: 'accepted' });
+
+                // Create an entry in the requester's friends subcollection
+                const otherUserFriendRef = doc(db, `${getUserCollectionBasePath(requestId)}/friends`, userId);
+                await setDoc(otherUserFriendRef, {
+                    requesterId: requestId, // The original requester ID
+                    status: 'accepted',
+                    timestamp: serverTimestamp(),
+                });
+
+                setMessage("Friend request accepted!");
+                setMessageType("success");
+                setShowModal(true);
+            } catch (error) {
+                console.error("Error accepting request:", error);
+                setMessage("Failed to accept friend request: " + error.message);
+                setMessageType("error");
+                setShowModal(true);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        const handleDeclineRequest = async (requestId) => {
+            if (!userId) return;
+
+            setLoading(true);
+            try {
+                const requestRef = doc(db, `${getUserCollectionBasePath(userId)}/friends`, requestId);
+                await deleteDoc(requestRef);
+                setMessage("Friend request declined.");
+                setMessageType("success");
+                setShowModal(true);
+            } catch (error) {
+            console.error("Error declining request:", error);
+                setMessage("Failed to decline friend request: " + error.message);
+                setMessageType("error");
+                setShowModal(true);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        return (
+            <div className="p-4 bg-background-light min-h-screen">
+                <h2 className="text-4xl font-montserrat font-bold text-primary-dark text-center mb-8 pt-4 animate-fade-in-up border-b-4 border-accent-vibrant pb-2">Friends</h2>
+
+                <div className="max-w-2xl mx-auto space-y-8">
+                    {/* Friend Request Section */}
+                    <div className="bg-card-bg p-6 rounded-lg shadow-xl border border-subtle-gray animate-fade-in-up">
+                        <h3 className="text-2xl font-montserrat font-bold text-primary-dark mb-4">Pending Requests</h3>
+                        {pendingRequests.length > 0 ? (
+                            <ul className="space-y-4">
+                                {pendingRequests.map(req => (
+                                    <li key={req.id} className="flex justify-between items-center p-4 bg-background-light rounded-md shadow-sm">
+                                        <p className="text-text-color font-poppins">Anonymous User ({req.requesterId.substring(0, 8)}...)</p>
+                                        <div className="flex space-x-2">
+                                            <button
+                                                onClick={() => handleAcceptRequest(req.id)}
+                                                className="bg-accent-vibrant text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-primary-light transition-all duration-300"
+                                                disabled={loading}
+                                            >
+                                                Accept
+                                            </button>
+                                            <button
+                                                onClick={() => handleDeclineRequest(req.id)}
+                                                className="bg-subtle-gray text-text-color px-4 py-2 rounded-full text-sm font-semibold hover:bg-gray-400 transition-all duration-300"
+                                                disabled={loading}
+                                            >
+                                                Decline
+                                            </button>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p className="text-gray-500">No pending friend requests.</p>
+                        )}
+                        <div className="mt-6 flex justify-center">
+                            <button
+                                onClick={handleSendFriendRequest}
+                                className="bg-primary-light text-white py-2 px-6 rounded-full font-semibold hover:bg-primary-dark transition-all duration-300"
+                                disabled={loading}
+                            >
+                                {loading ? 'Sending...' : 'Send Friend Request (to user-2)'} {/* Clarified for placeholder */}
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Friend List Section */}
+                    <div className="bg-card-bg p-6 rounded-lg shadow-xl border border-subtle-gray animate-fade-in-up">
+                        <h3 className="text-2xl font-montserrat font-bold text-primary-dark mb-4">My Friends</h3>
+                        {friends.length > 0 ? (
+                            <ul className="space-y-4">
+                                {friends.map(friend => (
+                                    <li key={friend.id} className="flex items-center p-4 bg-background-light rounded-md shadow-sm">
+                                        {/* Link to friend's profile - will need a real user 'profile' collection for details */}
+                                        <Link to={`/profile/${friend.id}`} className="hover:underline hover:text-accent-vibrant transition-colors duration-200">
+                                            <p className="text-text-color font-poppins">Anonymous User ({friend.id.substring(0, 8)}...)</p>
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p className="text-gray-500">You don't have any friends yet. Send some requests!</p>
+                        )}
+                    </div>
+                </div>
+
+                {showModal && (
+                    <MessageModal
+                        message={message}
+                        type={messageType}
+                        onClose={() => { setShowModal(false); setMessage(''); setMessageType(''); }}
+                    />
+                )}
+            </div>
+        );
+    };
+
+    // --- Explore Component ---
+    const Explore = () => {
+        const [items, setItems] = React.useState([]);
+        const [loading, setLoading] = React.useState(false);
+        const [message, setMessage] = React.useState('');
+        const [messageType, setMessageType] = React.useState('');
+        const [showModal, setShowModal] = React.useState(false);
+
+        const generateExploreContent = async () => {
+            setLoading(true);
+            setItems([]);
+            setMessage('');
+            setMessageType('');
+            try {
+                const prompt = `Generate 6 diverse and interesting "explore" topics or profiles. For each one, provide a short, engaging title, a 2-3 sentence description, and a prompt for a related AI-generated image. Topics should be positive and relevant to a community platform. Return as a JSON array of objects with 'title', 'description', and 'imagePrompt' keys.`;
+                const payload = {
+                    contents: [{ role: "user", parts: [{ text: prompt }] }],
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: "ARRAY",
+                            items: {
+                                type: "OBJECT",
+                                properties: {
+                                    "title": { "type": "STRING" },
+                                    "description": { "type": "STRING" },
+                                    "imagePrompt": { "type": "STRING" }
+                                }
+                            }
+                        }
+                    }
+                };
+                const result = await callGeminiAPI(payload);
+                const jsonString = result.candidates[0].content.parts[0].text;
+                const parsedItems = JSON.parse(jsonString);
+
+                // For each item, generate the image asynchronously
+                const itemsWithImages = await Promise.all(
+                    parsedItems.map(async (item) => {
+                        try {
+                            const imageUrl = await callImagenAPI(item.imagePrompt);
+                            return { ...item, imageUrl };
+                        } catch (imgError) {
+                            console.error("Error generating image for item:", imgError);
+                            return { ...item, imageUrl: 'https://via.placeholder.com/400?text=Image+Unavailable' }; // Fallback
+                        }
+                    })
+                );
+
+                setItems(itemsWithImages);
+                setMessage("New topics generated!");
+                setMessageType("success");
+            } catch (error) {
+                console.error("Error generating explore content:", error);
+                setMessage("Failed to generate explore content: " + error.message);
+                setMessageType("error");
+            } finally {
+                setLoading(false);
+                setShowModal(true);
+            }
+        };
+
+        React.useEffect(() => {
+            generateExploreContent();
+        }, []);
+
+        return (
+            <div className="p-4 bg-background-light min-h-screen">
+                <h2 className="text-4xl font-montserrat font-bold text-primary-dark text-center mb-8 pt-4 animate-fade-in-up border-b-4 border-accent-vibrant pb-2">Explore</h2>
+
+                <div className="flex justify-center mb-8">
+                    <button
+                        onClick={generateExploreContent}
+                        className="bg-accent-vibrant text-white py-3 px-8 rounded-full font-bold text-lg
+                                   hover:bg-primary-light transition-all duration-300 transform hover:scale-105 shadow-lg"
+                        disabled={loading}
+                    >
+                        {loading ? 'Generating...' : 'Generate New Topics'}
+                    </button>
+                </div>
+
+                {loading && <LoadingSpinner text="Discovering new content..." />}
+
+                {!loading && items.length > 0 && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {items.map((item, index) => (
+                            <div key={index} className="bg-card-bg p-6 rounded-lg shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border border-subtle-gray animate-fade-in">
+                                <img src={item.imageUrl} alt={item.title} className="w-full h-48 object-cover rounded-md mb-4" />
+                                <h3 className="text-2xl font-bold font-montserrat text-primary-dark mb-2 leading-tight">{item.title}</h3>
+                                <p className="text-text-color text-md font-poppins">{item.description}</p>
+                            </div>
+                        ))}
+                    </div>
+                )}
+                {!loading && items.length === 0 && (
+                     <p className="text-center text-text-color text-xl mt-10">No explore content found. Try generating some!</p>
+                )}
+
+                {showModal && (
+                    <MessageModal
+                        message={message}
+                        type={messageType}
+                        onClose={() => { setShowModal(false); setMessage(''); setMessageType(''); }}
+                    />
+                )}
+            </div>
+        );
+    };
+
+    // --- ProfilePage Component ---
+    const ProfilePage = () => {
+        const { db, appId } = useFirebase(); // Get appId from context
+        const { userId: paramUserId } = useParams(); // Renamed to avoid conflict with `userId` from useFirebase
+        const { userId: currentUserId } = useFirebase(); // Get current user ID
+        const targetUserId = paramUserId || currentUserId; // Display profile of paramUserId or currentUserId if param is not set
+
+        const [profile, setProfile] = React.useState(null);
+        const [loading, setLoading] = React.useState(true);
+        const [error, setError] = React.useState('');
+
+        React.useEffect(() => {
+            const fetchProfile = async () => {
+                if (!db || !targetUserId || !appId) return; // Ensure appId is available
+
+                // Consistent path for user profiles: users/{userId}/profile/data
+                const userProfileDocPath = `/artifacts/${appId}/users/${targetUserId}/profile/data`;
+                const userRef = doc(db, userProfileDocPath); // Using the consistent path
+
+                try {
+                    const docSnap = await getDoc(userRef);
+                    if (docSnap.exists()) {
+                        setProfile(docSnap.data());
+                    } else {
+                        // If no specific profile doc, create a default one for demonstration
+                        const defaultProfile = {
+                            displayName: `Anonymous User (${targetUserId.substring(0, 8)}...)`,
+                            bio: 'This user has no bio yet.',
+                            photoURL: `https://placehold.co/150x150/D1D5DB/4B5563?text=User`,
+                            createdAt: serverTimestamp(),
+                        };
+                        // Use setDoc with { merge: true } to create or update the profile
+                        await setDoc(userRef, defaultProfile, { merge: true });
+                        setProfile(defaultProfile);
+                    }
+                } catch (e) {
+                    console.error("Error fetching or creating user profile:", e);
+                    setError('Failed to load profile. Please try again later.');
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            fetchProfile();
+        }, [db, targetUserId, appId]); // Depend on targetUserId and appId so it re-fetches if the param changes
+
+        if (loading) {
+            return <LoadingSpinner text="Loading profile..." />;
+        }
+
+        if (error) {
+            return <p className="text-center text-text-color text-xl mt-10">{error}</p>;
+        }
+
+        if (!profile) {
+            return <p className="text-center text-text-color text-xl mt-10">Profile not found.</p>;
+        }
+
+        return (
+            <div className="p-4 bg-background-light min-h-screen">
+                <div className="max-w-xl mx-auto p-8 bg-card-bg rounded-lg shadow-lg text-center">
+                    <img
+                        src={profile.photoURL}
+                        alt="Profile"
+                        className="rounded-full w-32 h-32 mx-auto mb-4 object-cover border-4 border-accent-vibrant"
+                        onError={(e) => { e.target.onerror = null; e.target.src = `https://placehold.co/150x150/D1D5DB/4B5563?text=User`; }}
+                    />
+                    <h2 className="text-3xl font-poppins font-bold text-primary-dark mb-2">{profile.displayName}</h2>
+                    <p className="text-lg text-text-color mb-4">{profile.bio}</p>
+                    <div className="mt-6 text-left">
+                        <h3 className="text-xl font-semibold text-primary-dark border-b pb-2 mb-2">My Activity</h3>
+                        <p className="text-text-color">
+                            Here we will display the user's posts, debates they've voted on, etc.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    // Main App Component
+    const App = () => {
+        const { userId, isAuthReady } = useFirebase();
+
+        if (!isAuthReady) {
+            return (
+              <div className="min-h-screen flex items-center justify-center bg-background-light">
+                <LoadingSpinner text="Initializing application..." />
+              </div>
+            );
+        }
+
+        return (
+            // Changed to HashRouter for GitHub Pages compatibility
+            <HashRouter>
+                <div className="font-poppins text-text-color bg-background-dark min-h-screen">
+                    <Navbar />
+                    <Routes>
+                        <Route path="/" element={<NewsHub />} />
+                        <Route path="/news" element={<NewsHub />} />
+                        <Route path="/events" element={<EventsPage />} />
+                        <Route path="/meetups" element={<MeetupsPage />} /> {/* Render new MeetupsPage */}
+                        <Route path="/friends" element={<Friends />} />
+                        <Route path="/community" element={<CommunityFeed />} />
+                        <Route path="/reels" element={<Reels />} />
+                        <Route path="/chat" element={<Chat />} />
+                        <Route path="/explore" element={<Explore />} />
+                        <Route path="/legislative" element={<Legislative />} /> {/* Legislative now a simple placeholder */}
+                        <Route path="/debate" element={<WeeklyDebate />} />
+                        <Route path="/poll" element={<PedroPoll />} />
+                        <Route path="/profile/:userId" element={<ProfilePage />} />
+                        {/* A route for the logged-in user's own profile */}
+                        {userId && <Route path="/profile" element={<ProfilePage />} />}
+                    </Routes>
+                </div>
+            </HashRouter>
+        );
+    };
+
+    // Render the app
+    // Changed to ReactDOM.render for React 17 compatibility
+    ReactDOM.render(
+        <FirebaseProvider>
+            <App />
+        </FirebaseProvider>,
+        document.getElementById('root')
+    );
+
+</script>
+</body>
+</html>
