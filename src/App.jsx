@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { BrowserRouter as Router, Routes, Route, NavLink } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, NavLink, Link } from "react-router-dom";
 
 // --- Error Boundary ---
 class ErrorBoundary extends React.Component {
@@ -19,7 +19,7 @@ class ErrorBoundary extends React.Component {
         <div style={{padding:32, background:"#fee", minHeight:"100vh", display:"flex", flexDirection:"column", alignItems:"center"}}>
           <h2 style={{color:"#b00"}}>Something went wrong.</h2>
           <p>
-            Please refresh, or <a href="/">go back home</a>.
+            Please refresh, or <a href="/nuestro-pulso-app/">go back home</a>.
           </p>
           <details style={{color:"#555"}}>
             {this.state.error && this.state.error.toString()}
@@ -223,8 +223,8 @@ function Home() {
     <div style={{minHeight:"100vh", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", background:"#e0f2fe"}}>
       <h1 style={{fontSize:48, fontWeight:"bold", color:"#164e63", marginBottom:24}}>Nuestro Pulso</h1>
       <p style={{fontSize:24, marginBottom:18, color:"#334155"}}>Community Platform for News, Debates, Events, and More.</p>
-      <a href="/chat" style={{background:"#22c55e", color:"#fff", padding:"18px 36px", borderRadius:10, fontWeight:"bold", fontSize:22, marginBottom:12, textDecoration:"none"}}>Join Chat</a>
-      <a href="/debate" style={{background:"#164e63", color:"#fff", padding:"18px 36px", borderRadius:10, fontWeight:"bold", fontSize:22, marginTop:8, textDecoration:"none"}}>Weekly Debate</a>
+      <Link to="/chat" style={{background:"#22c55e", color:"#fff", padding:"18px 36px", borderRadius:10, fontWeight:"bold", fontSize:22, marginBottom:12, textDecoration:"none"}}>Join Chat</Link>
+      <Link to="/debate" style={{background:"#164e63", color:"#fff", padding:"18px 36px", borderRadius:10, fontWeight:"bold", fontSize:22, marginTop:8, textDecoration:"none"}}>Weekly Debate</Link>
     </div>
   );
 }
@@ -235,7 +235,7 @@ function NotFound() {
     <div style={{minHeight:"100vh", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center"}}>
       <h1 style={{fontSize:36, fontWeight:"bold", color:"#164e63", marginBottom:12}}>Page Not Found</h1>
       <p style={{marginBottom:18}}>The page you requested doesn’t exist.</p>
-      <a href="/" style={{background:"#22c55e", color:"#fff", padding:"12px 28px", borderRadius:8, fontWeight:"bold", textDecoration:"none"}}>Go Home</a>
+      <Link to="/" style={{background:"#22c55e", color:"#fff", padding:"12px 28px", borderRadius:8, fontWeight:"bold", textDecoration:"none"}}>Go Home</Link>
     </div>
   );
 }
@@ -251,7 +251,7 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <Router>
+      <Router basename="/nuestro-pulso-app">
         <Navbar />
         <Routes>
           <Route path="/" element={<Home />} />
