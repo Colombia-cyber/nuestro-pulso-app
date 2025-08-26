@@ -67,7 +67,10 @@ The app is automatically deployed to GitHub Pages when changes are pushed to the
 
 1. Installs dependencies
 2. Builds the app using Vite
-3. Deploys the `dist` folder to GitHub Pages
+3. Copies 404.html for client-side routing support
+4. Deploys the `dist` folder to GitHub Pages
+
+The deployment is handled by the GitHub Actions workflow in `.github/workflows/deploy.yml`.
 
 ### Manual Deployment
 
@@ -106,6 +109,8 @@ The app is configured for GitHub Pages deployment with:
 - **Base URL**: `/nuestro-pulso-app/` (configured in `vite.config.js`)
 - **Homepage**: `https://colombia-cyber.github.io/nuestro-pulso-app` (in `package.json`)
 - **Build Output**: `dist` directory
+- **Client-side Routing**: React Router configured with basename for GitHub Pages
+- **404 Handling**: Custom 404.html for proper SPA routing on GitHub Pages
 
 ## 🤝 Contributing
 
