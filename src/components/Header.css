@@ -1,0 +1,188 @@
+/* Colombian flag colors */
+:root {
+  --colombia-yellow: #fcdd09;
+  --colombia-blue: #003893;
+  --colombia-red: #ce1126;
+  --colombia-light-yellow: #fde047;
+  --colombia-dark-blue: #1e293b;
+}
+
+.app-header {
+  background: linear-gradient(135deg, var(--colombia-yellow) 0%, var(--colombia-light-yellow) 50%, var(--colombia-blue) 100%);
+  color: var(--colombia-dark-blue);
+  padding: 1rem 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-bottom: 3px solid var(--colombia-red);
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.app-title {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--colombia-dark-blue);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.colombia-flag {
+  font-size: 1.5rem;
+}
+
+.app-subtitle {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--colombia-blue);
+  font-weight: 500;
+}
+
+.header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
+}
+
+.user-label {
+  font-size: 0.8rem;
+  color: var(--colombia-blue);
+  font-weight: 500;
+}
+
+.user-name {
+  font-size: 1rem;
+  font-weight: bold;
+  color: var(--colombia-dark-blue);
+}
+
+.header-clock {
+  background: rgba(255, 255, 255, 0.3);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
+}
+
+.clock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.clock-label {
+  font-size: 0.8rem;
+  color: var(--colombia-blue);
+  font-weight: 500;
+}
+
+.clock-time {
+  font-size: 1rem;
+  font-weight: bold;
+  color: var(--colombia-dark-blue);
+  font-family: 'Courier New', monospace;
+}
+
+.main-nav {
+  margin-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+  padding-top: 1rem;
+}
+
+.nav-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.nav-link {
+  color: var(--colombia-dark-blue);
+  text-decoration: none;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.nav-link:hover,
+.nav-link.active {
+  background: var(--colombia-red);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .app-header {
+    padding: 1rem;
+  }
+  
+  .header-content {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .header-right {
+    align-items: center;
+  }
+  
+  .app-title {
+    font-size: 1.5rem;
+  }
+  
+  .nav-list {
+    gap: 1rem;
+  }
+  
+  .nav-link {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .nav-list {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .clock {
+    flex-direction: row;
+    gap: 0.5rem;
+  }
+  
+  .clock-label::after {
+    content: ": ";
+  }
+}
