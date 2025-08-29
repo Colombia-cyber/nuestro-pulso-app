@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { z } from 'zod';
+import { loginSchema, validateRequest, sanitizeEmail, createErrorResponse, createSuccessResponse } from '@/lib/validation';
 
 // In a real app, this would be stored in a database
 const users = [
@@ -14,32 +14,27 @@ const users = [
   },
 ];
 
-const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
-});
-
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { email, password } = loginSchema.parse(body);
+    // Validate input
+    const validation = await validateRequest(loginSchema)(request);
+    if (!validation.success) {
+      return createErrorResponse(validation.error, 400);
+    }
+
+    const { email, password } = validation.data;
+    const sanitizedEmail = sanitizeEmail(email);
 
     // Find user
-    const user = users.find((u) => u.email === email);
+    const user = users.find((u) => u.email === sanitizedEmail);
     if (!user) {
-      return NextResponse.json(
-        { error: 'Invalid credentials' },
-        { status: 401 }
-      );
+      return createErrorResponse('Credenciales inválidas', 401);
     }
 
     // Check password
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
-      return NextResponse.json(
-        { error: 'Invalid credentials' },
-        { status: 401 }
-      );
+      return createErrorResponse('Credenciales inválidas', 401);
     }
 
     // Generate JWT
@@ -52,22 +47,12 @@ export async function POST(request: NextRequest) {
     // Return user data (without password) and token
     const { password: _, ...userWithoutPassword } = user;
     
-    return NextResponse.json({
+    return createSuccessResponse({
       user: userWithoutPassword,
       token,
     });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid input', details: error.errors },
-        { status: 400 }
-      );
-    }
-
     console.error('Login error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return createErrorResponse('Error interno del servidor', 500);
   }
 }

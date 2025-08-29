@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { AuthProvider } from '@/components/providers/auth-provider';
 import { ToastProvider } from '@/components/providers/toast-provider';
+import { ErrorBoundary } from '@/components/ui/error-boundary';
 
 export const metadata: Metadata = {
   title: 'Nuestro Pulso - Plataforma de Participación Ciudadana',
@@ -30,11 +31,13 @@ export default function RootLayout({
   return (
     <html lang="es-CO">
       <body className="font-sans antialiased">
-        <AuthProvider>
-          <ToastProvider>
-            {children}
-          </ToastProvider>
-        </AuthProvider>
+        <ErrorBoundary>
+          <AuthProvider>
+            <ToastProvider>
+              {children}
+            </ToastProvider>
+          </AuthProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );
