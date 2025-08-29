@@ -1,0 +1,92 @@
+{
+  "app": {
+    "title": "Nuestro Pulso",
+    "description": "Connect, debate, and participate in your community"
+  },
+  "navigation": {
+    "home": "Home",
+    "chat": "Chat",
+    "debates": "Debates",
+    "surveys": "Surveys",
+    "news": "News",
+    "community": "Community",
+    "admin": "Admin"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "save": "Save",
+    "edit": "Edit",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "language": "Language"
+  },
+  "auth": {
+    "login": "Log In",
+    "logout": "Log Out",
+    "register": "Register",
+    "email": "Email",
+    "password": "Password",
+    "username": "Username",
+    "welcomeBack": "Welcome back!",
+    "createAccount": "Create an account"
+  },
+  "chat": {
+    "title": "Community Chat",
+    "sendMessage": "Send message",
+    "typing": "Typing...",
+    "online": "Online",
+    "offline": "Offline"
+  },
+  "debates": {
+    "title": "Community Debates",
+    "createDebate": "Create Debate",
+    "joinDebate": "Join Debate",
+    "topicTitle": "Topic",
+    "description": "Description",
+    "participants": "Participants",
+    "status": "Status"
+  },
+  "surveys": {
+    "title": "Surveys",
+    "createSurvey": "Create Survey",
+    "takeSurvey": "Take Survey",
+    "results": "Results",
+    "question": "Question",
+    "answer": "Answer",
+    "complete": "Complete"
+  },
+  "news": {
+    "title": "Community News",
+    "latest": "Latest News",
+    "readMore": "Read more",
+    "publishedOn": "Published on",
+    "author": "Author",
+    "category": "Category"
+  },
+  "community": {
+    "title": "Community",
+    "members": "Members",
+    "events": "Events",
+    "groups": "Groups",
+    "join": "Join",
+    "leave": "Leave"
+  },
+  "admin": {
+    "title": "Administration",
+    "dashboard": "Dashboard",
+    "users": "Users",
+    "content": "Content",
+    "settings": "Settings",
+    "analytics": "Analytics"
+  }
+}
