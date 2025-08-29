@@ -1,0 +1,280 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root{
+  --bg-opacity: 0.06;
+  --bg-blur: 2px;
+  --max-width: 980px;
+  --colombian-yellow: #FFD100;
+  --colombian-blue: #0038A8;
+  --colombian-red: #CE1126;
+  --colombian-gold: #d4af37;
+}
+
+* { box-sizing: border-box; }
+
+body, html, #root {
+  height: 100%;
+  margin: 0;
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  background-color: #fafafa;
+  color: #222;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Colombian-themed background wrapper */
+.bg-container {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+.bg-container::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url('/images/colombian-flag.svg');
+  background-size: cover;
+  background-position: center;
+  opacity: var(--bg-opacity);
+  filter: blur(var(--bg-blur));
+  transform: scale(1.02);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.bg-container::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url('/images/angry-crowd-silhouette.svg');
+  background-repeat: no-repeat;
+  background-position: right bottom;
+  background-size: 40%;
+  opacity: calc(var(--bg-opacity) * 0.9);
+  filter: blur(calc(var(--bg-blur) * 0.6));
+  z-index: 0;
+  pointer-events: none;
+}
+
+.bg-content {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+}
+
+/* Colombian-themed navigation */
+.colombian-nav {
+  display: flex;
+  gap: 8px;
+  padding: 12px;
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(6px);
+  align-items: center;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.colombian-nav button {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.colombian-nav button:hover {
+  background: rgba(212, 175, 55, 0.1);
+  border-color: var(--colombian-gold);
+}
+
+.colombian-nav button.active {
+  background: var(--colombian-gold);
+  color: #111;
+  border-color: #caa43a;
+}
+
+/* Colombian-themed container */
+.colombian-container {
+  max-width: var(--max-width);
+  margin: 24px auto;
+  padding: 16px;
+}
+
+/* Colombian-themed hero section */
+.colombian-hero {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 48px 16px;
+  background: rgba(255,255,255,0.72);
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+  backdrop-filter: blur(8px);
+}
+
+.colombian-hero .left {
+  flex: 1 1 60%;
+}
+
+.colombian-hero h1 {
+  margin: 0 0 8px 0;
+  font-size: 2.4rem;
+  color: var(--colombian-blue);
+  font-weight: 700;
+}
+
+.colombian-hero p {
+  margin: 0;
+  color: #333;
+  opacity: 0.9;
+}
+
+/* Colombian-themed glass morphism cards */
+.glass-card {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 24px;
+  margin: 16px 0;
+}
+
+.glass-card-dark {
+  background: rgba(0, 56, 168, 0.8);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 24px;
+  margin: 16px 0;
+  color: white;
+}
+
+/* Colombian-themed buttons */
+.btn-colombian-primary {
+  background: linear-gradient(135deg, var(--colombian-gold), #b8860b);
+  color: #fff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba(212, 175, 55, 0.3);
+}
+
+.btn-colombian-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+}
+
+.btn-colombian-secondary {
+  background: linear-gradient(135deg, var(--colombian-blue), #002570);
+  color: #fff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba(0, 56, 168, 0.3);
+}
+
+.btn-colombian-secondary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 56, 168, 0.4);
+}
+
+/* Colombian-themed form inputs */
+.colombian-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid rgba(212, 175, 55, 0.3);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(5px);
+  margin-bottom: 16px;
+  transition: all 0.3s ease;
+}
+
+.colombian-input:focus {
+  outline: none;
+  border-color: var(--colombian-gold);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+}
+
+/* Custom scrollbar with Colombian theme */
+::-webkit-scrollbar {
+  width: 8px;
+  background: rgba(255, 209, 0, 0.1);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--colombian-gold);
+  border-radius: 9999px;
+}
+
+/* Responsive design for mobile-first Colombian users */
+@media (max-width: 720px) {
+  .colombian-hero { 
+    flex-direction: column; 
+    text-align: center; 
+    padding: 32px 16px;
+  }
+  .colombian-hero .left { 
+    width: 100%; 
+  }
+  .colombian-hero h1 {
+    font-size: 2rem;
+  }
+  .colombian-container {
+    padding: 12px;
+    margin: 12px auto;
+  }
+}
+
+/* Animation keyframes */
+@keyframes fade-in-up {
+  0% { 
+    opacity: 0; 
+    transform: translateY(30px);
+  }
+  100% { 
+    opacity: 1; 
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.8s cubic-bezier(.6,.1,.4,1) both;
+}
+
+@keyframes pulse-gold {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(212, 175, 55, 0); }
+}
+
+.pulse-gold {
+  animation: pulse-gold 2s infinite;
+}
+
+/* Colombian civic engagement theme */
+.civic-header {
+  color: var(--colombian-blue);
+  font-weight: 700;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.timestamp {
+  color: var(--colombian-gold);
+  font-size: 0.875rem;
+  font-weight: 500;
+}

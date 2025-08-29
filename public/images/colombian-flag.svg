@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="360" viewBox="0 0 600 360" role="img" aria-label="Colombian flag">
+  <rect width="600" height="360" fill="#FFD100"/>
+  <rect y="180" width="600" height="90" fill="#0038A8"/>
+  <rect y="270" width="600" height="90" fill="#CE1126"/>
+</svg>
