@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Colombian Flag Colors */
+  --colombia-yellow: #FCDD09;
+  --colombia-blue: #003893;
+  --colombia-red: #CE1126;
+  --colombia-gold: #FFD700;
+}
+
+@layer base {
+  body {
+    @apply bg-gradient-to-br from-yellow-50 to-blue-50 min-h-screen;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+}
+
+@layer components {
+  .btn-colombia {
+    @apply bg-yellow-400 hover:bg-yellow-500 text-blue-900 font-semibold py-2 px-4 rounded-lg transition-colors;
+  }
+  
+  .btn-colombia-blue {
+    @apply bg-blue-900 hover:bg-blue-800 text-white font-semibold py-2 px-4 rounded-lg transition-colors;
+  }
+  
+  .btn-colombia-red {
+    @apply bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors;
+  }
+  
+  .card-colombia {
+    @apply bg-white/80 backdrop-blur-sm border border-yellow-200 rounded-xl shadow-lg p-6;
+  }
+  
+  .gradient-colombia {
+    background: linear-gradient(135deg, var(--colombia-yellow) 0%, var(--colombia-blue) 50%, var(--colombia-red) 100%);
+  }
+}
