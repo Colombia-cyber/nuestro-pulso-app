@@ -1,13 +1,19 @@
 {
   "name": "nuestro-pulso-app",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "Community engagement platform for Colombian citizens",
+  "keywords": ["community", "engagement", "colombia", "civic", "participation"],
+  "author": "Colombia-cyber",
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy:gh-pages": "npm run build && gh-pages -d dist",
+    "deploy:vercel": "vercel --prod"
   },
   "dependencies": {
     "clsx": "^2.1.1",

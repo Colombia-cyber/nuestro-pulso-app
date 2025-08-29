@@ -28,7 +28,8 @@
     "search": "Buscar",
     "filter": "Filtrar",
     "sort": "Ordenar",
-    "language": "Idioma"
+    "language": "Idioma",
+    "settings": "Configuración"
   },
   "auth": {
     "login": "Iniciar Sesión",

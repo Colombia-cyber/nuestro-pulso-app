@@ -28,7 +28,8 @@
     "search": "Search",
     "filter": "Filter",
     "sort": "Sort",
-    "language": "Language"
+    "language": "Language",
+    "settings": "Settings"
   },
   "auth": {
     "login": "Log In",
