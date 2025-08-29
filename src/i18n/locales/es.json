@@ -1,0 +1,92 @@
+{
+  "app": {
+    "title": "Nuestro Pulso",
+    "description": "Conecta, debate y participa en tu comunidad"
+  },
+  "navigation": {
+    "home": "Inicio",
+    "chat": "Chat",
+    "debates": "Debates",
+    "surveys": "Encuestas",
+    "news": "Noticias",
+    "community": "Comunidad",
+    "admin": "Administración"
+  },
+  "common": {
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "confirm": "Confirmar",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "submit": "Enviar",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "sort": "Ordenar",
+    "language": "Idioma"
+  },
+  "auth": {
+    "login": "Iniciar Sesión",
+    "logout": "Cerrar Sesión",
+    "register": "Registrarse",
+    "email": "Correo Electrónico",
+    "password": "Contraseña",
+    "username": "Nombre de Usuario",
+    "welcomeBack": "¡Bienvenido de vuelta!",
+    "createAccount": "Crear una cuenta"
+  },
+  "chat": {
+    "title": "Chat de la Comunidad",
+    "sendMessage": "Enviar mensaje",
+    "typing": "Escribiendo...",
+    "online": "En línea",
+    "offline": "Desconectado"
+  },
+  "debates": {
+    "title": "Debates de la Comunidad",
+    "createDebate": "Crear Debate",
+    "joinDebate": "Unirse al Debate",
+    "topicTitle": "Tema",
+    "description": "Descripción",
+    "participants": "Participantes",
+    "status": "Estado"
+  },
+  "surveys": {
+    "title": "Encuestas",
+    "createSurvey": "Crear Encuesta",
+    "takeSurvey": "Responder Encuesta",
+    "results": "Resultados",
+    "question": "Pregunta",
+    "answer": "Respuesta",
+    "complete": "Completar"
+  },
+  "news": {
+    "title": "Noticias de la Comunidad",
+    "latest": "Últimas Noticias",
+    "readMore": "Leer más",
+    "publishedOn": "Publicado el",
+    "author": "Autor",
+    "category": "Categoría"
+  },
+  "community": {
+    "title": "Comunidad",
+    "members": "Miembros",
+    "events": "Eventos",
+    "groups": "Grupos",
+    "join": "Unirse",
+    "leave": "Salir"
+  },
+  "admin": {
+    "title": "Administración",
+    "dashboard": "Panel de Control",
+    "users": "Usuarios",
+    "content": "Contenido",
+    "settings": "Configuración",
+    "analytics": "Analíticas"
+  }
+}
